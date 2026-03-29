@@ -47,6 +47,7 @@ namespace Tayx.Graphy.Ram
         private float[] m_allocatedArray;
         private float[] m_reservedArray;
         private float[] m_monoArray;
+        private int m_writeIndex = 0;
 
         private float m_highestMemory = 0;
 
@@ -142,36 +143,30 @@ namespace Tayx.Graphy.Ram
             float reservedMemory = m_ramMonitor.ReservedRam;
             float monoMemory = m_ramMonitor.MonoRam;
 
+            m_allocatedArray[ m_writeIndex ] = allocatedMemory;
+            m_reservedArray[ m_writeIndex ] = reservedMemory;
+            m_monoArray[ m_writeIndex ] = monoMemory;
+            m_writeIndex = ( m_writeIndex + 1 ) % m_resolution;
+
             m_highestMemory = 0;
 
-            for( int i = 0; i <= m_resolution - 1; i++ )
+            for( int i = 0; i < m_resolution; i++ )
             {
-                if( i >= m_resolution - 1 )
-                {
-                    m_allocatedArray[ i ] = allocatedMemory;
-                    m_reservedArray[ i ] = reservedMemory;
-                    m_monoArray[ i ] = monoMemory;
-                }
-                else
-                {
-                    m_allocatedArray[ i ] = m_allocatedArray[ i + 1 ];
-                    m_reservedArray[ i ] = m_reservedArray[ i + 1 ];
-                    m_monoArray[ i ] = m_monoArray[ i + 1 ];
-                }
-
                 if( m_highestMemory < m_reservedArray[ i ] )
                 {
                     m_highestMemory = m_reservedArray[ i ];
                 }
             }
 
-            for( int i = 0; i <= m_resolution - 1; i++ )
+            for( int i = 0; i < m_resolution; i++ )
             {
-                m_shaderGraphAllocated.ShaderArrayValues[ i ] = m_allocatedArray[ i ] / m_highestMemory;
+                int readIdx = ( m_writeIndex + i ) % m_resolution;
 
-                m_shaderGraphReserved.ShaderArrayValues[ i ] = m_reservedArray[ i ] / m_highestMemory;
+                m_shaderGraphAllocated.ShaderArrayValues[ i ] = m_allocatedArray[ readIdx ] / m_highestMemory;
 
-                m_shaderGraphMono.ShaderArrayValues[ i ] = m_monoArray[ i ] / m_highestMemory;
+                m_shaderGraphReserved.ShaderArrayValues[ i ] = m_reservedArray[ readIdx ] / m_highestMemory;
+
+                m_shaderGraphMono.ShaderArrayValues[ i ] = m_monoArray[ readIdx ] / m_highestMemory;
             }
 
             m_shaderGraphAllocated.UpdatePoints();
@@ -187,6 +182,7 @@ namespace Tayx.Graphy.Ram
                 m_allocatedArray = new float[m_resolution];
                 m_reservedArray = new float[m_resolution];
                 m_monoArray = new float[m_resolution];
+                m_writeIndex = 0;
 
                 m_shaderGraphAllocated.ShaderArrayValues = new float[m_resolution];
                 m_shaderGraphReserved.ShaderArrayValues = new float[m_resolution];

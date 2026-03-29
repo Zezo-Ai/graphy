@@ -42,6 +42,7 @@ namespace Tayx.Graphy.Fps
         private G_GraphShader m_shaderGraph = null;
 
         private int[] m_fpsArray;
+        private int m_writeIndex = 0;
 
         private int m_highestFps;
 
@@ -107,21 +108,13 @@ namespace Tayx.Graphy.Fps
 
             short fps = m_fpsMonitor.CurrentFPS;
 
+            m_fpsArray[ m_writeIndex ] = fps;
+            m_writeIndex = ( m_writeIndex + 1 ) % m_resolution;
+
             int currentMaxFps = 0;
 
-            for( int i = 0; i <= m_resolution - 1; i++ )
+            for( int i = 0; i < m_resolution; i++ )
             {
-                if( i >= m_resolution - 1 )
-                {
-                    m_fpsArray[ i ] = fps;
-                }
-                else
-                {
-                    m_fpsArray[ i ] = m_fpsArray[ i + 1 ];
-                }
-
-                // Store the highest fps to use as the highest point in the graph
-
                 if( currentMaxFps < m_fpsArray[ i ] )
                 {
                     currentMaxFps = m_fpsArray[ i ];
@@ -138,9 +131,9 @@ namespace Tayx.Graphy.Fps
                 m_shaderGraph.ShaderArrayValues = new float[m_resolution];
             }
 
-            for( int i = 0; i <= m_resolution - 1; i++ )
+            for( int i = 0; i < m_resolution; i++ )
             {
-                m_shaderGraph.ShaderArrayValues[ i ] = m_fpsArray[ i ] / (float) m_highestFps;
+                m_shaderGraph.ShaderArrayValues[ i ] = m_fpsArray[ ( m_writeIndex + i ) % m_resolution ] / (float) m_highestFps;
             }
 
             // Update the material values
@@ -161,6 +154,7 @@ namespace Tayx.Graphy.Fps
             {
                 m_fpsArray = new int[m_resolution];
                 m_shaderGraph.ShaderArrayValues = new float[m_resolution];
+                m_writeIndex = 0;
             }
 
             for( int i = 0; i < m_resolution; i++ )
