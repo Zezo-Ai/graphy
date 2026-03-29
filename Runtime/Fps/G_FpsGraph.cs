@@ -68,9 +68,9 @@ namespace Tayx.Graphy.Fps
                 return;
             }
 
-            if( m_shaderGraph.Image.material != null )
+            if( m_isInitialized && m_shaderGraph.Image.material != null )
             {
-                DestroyImmediate( m_shaderGraph.Image.material );
+                Destroy( m_shaderGraph.Image.material );
             }
 
             switch( m_graphyManager.GraphyMode )

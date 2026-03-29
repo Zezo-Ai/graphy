@@ -89,14 +89,14 @@ namespace Tayx.Graphy.Audio
                 return;
             }
 
-            if( m_shaderGraph.Image.material != null )
+            if( m_isInitialized && m_shaderGraph.Image.material != null )
             {
-                DestroyImmediate( m_shaderGraph.Image.material );
+                Destroy( m_shaderGraph.Image.material );
             }
 
-            if( m_shaderGraphHighestValues.Image.material != null )
+            if( m_isInitialized && m_shaderGraphHighestValues.Image.material != null )
             {
-                DestroyImmediate( m_shaderGraphHighestValues.Image.material );
+                Destroy( m_shaderGraphHighestValues.Image.material );
             }
 
             switch( m_graphyManager.GraphyMode )

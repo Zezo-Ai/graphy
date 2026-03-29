@@ -79,19 +79,19 @@ namespace Tayx.Graphy.Ram
                 return;
             }
 
-            if( m_shaderGraphAllocated.Image.material != null )
+            if( m_isInitialized && m_shaderGraphAllocated.Image.material != null )
             {
-                DestroyImmediate( m_shaderGraphAllocated.Image.material );
+                Destroy( m_shaderGraphAllocated.Image.material );
             }
 
-            if( m_shaderGraphReserved.Image.material != null )
+            if( m_isInitialized && m_shaderGraphReserved.Image.material != null )
             {
-                DestroyImmediate( m_shaderGraphReserved.Image.material );
+                Destroy( m_shaderGraphReserved.Image.material );
             }
 
-            if( m_shaderGraphMono.Image.material != null )
+            if( m_isInitialized && m_shaderGraphMono.Image.material != null )
             {
-                DestroyImmediate( m_shaderGraphMono.Image.material );
+                Destroy( m_shaderGraphMono.Image.material );
             }
 
             switch( m_graphyManager.GraphyMode )
