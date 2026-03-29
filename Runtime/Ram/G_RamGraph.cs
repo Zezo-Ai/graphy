@@ -78,6 +78,21 @@ namespace Tayx.Graphy.Ram
                 return;
             }
 
+            if( m_shaderGraphAllocated.Image.material != null )
+            {
+                DestroyImmediate( m_shaderGraphAllocated.Image.material );
+            }
+
+            if( m_shaderGraphReserved.Image.material != null )
+            {
+                DestroyImmediate( m_shaderGraphReserved.Image.material );
+            }
+
+            if( m_shaderGraphMono.Image.material != null )
+            {
+                DestroyImmediate( m_shaderGraphMono.Image.material );
+            }
+
             switch( m_graphyManager.GraphyMode )
             {
                 case GraphyManager.Mode.FULL:
