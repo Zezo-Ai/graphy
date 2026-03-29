@@ -30,6 +30,8 @@ namespace Tayx.Graphy.Fps
 
         private float m_unscaledDeltaTime = 0f;
 
+        private uint m_runningSum = 0;
+
         #endregion
 
         #region Properties -> Public
@@ -58,25 +60,20 @@ namespace Tayx.Graphy.Fps
 
             // Update avg fps
 
-            uint averageAddedFps = 0;
-
             m_indexSample++;
 
             if( m_indexSample >= m_fpsSamplesCapacity ) m_indexSample = 0;
 
+            m_runningSum -= (uint) m_fpsSamples[ m_indexSample ];
             m_fpsSamples[ m_indexSample ] = CurrentFPS;
+            m_runningSum += (uint) CurrentFPS;
 
             if( m_fpsSamplesCount < m_fpsSamplesCapacity )
             {
                 m_fpsSamplesCount++;
             }
 
-            for( int i = 0; i < m_fpsSamplesCount; i++ )
-            {
-                averageAddedFps += (uint) m_fpsSamples[ i ];
-            }
-
-            AverageFPS = (short) ((float) averageAddedFps / (float) m_fpsSamplesCount);
+            AverageFPS = (short) ((float) m_runningSum / (float) m_fpsSamplesCount);
 
             // Update percent lows
 
