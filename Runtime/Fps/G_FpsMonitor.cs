@@ -11,7 +11,6 @@
  * Attribution is not required, but it is always welcomed!
  * -------------------------------------*/
 
-using System;
 using UnityEngine;
 
 namespace Tayx.Graphy.Fps
@@ -21,7 +20,7 @@ namespace Tayx.Graphy.Fps
         #region Variables -> Private
 
         private short[] m_fpsSamples;
-        private short[] m_fpsSamplesSorted;
+        private short[] m_lowestSamples;
         private short m_fpsSamplesCapacity = 1024;
         private short m_onePercentSamples = 10;
         private short m_zero1PercentSamples = 1;
@@ -77,38 +76,46 @@ namespace Tayx.Graphy.Fps
 
             // Update percent lows
 
-            m_fpsSamples.CopyTo( m_fpsSamplesSorted, 0 );
-
-            /*
-             * TODO: Find a faster way to do this.
-             *      We can probably avoid copying the full array every time
-             *      and insert the new item already sorted in the list.
-             */
-            Array.Sort( m_fpsSamplesSorted,
-                ( x, y ) => x.CompareTo( y ) ); // The lambda expression avoids garbage generation
-
-            bool zero1PercentCalculated = false;
-
-            uint totalAddedFps = 0;
-
-            short samplesToIterateThroughForOnePercent = m_fpsSamplesCount < m_onePercentSamples
+            short k = m_fpsSamplesCount < m_onePercentSamples
                 ? m_fpsSamplesCount
                 : m_onePercentSamples;
 
-            short samplesToIterateThroughForZero1Percent = m_fpsSamplesCount < m_zero1PercentSamples
+            for( int i = 0; i < k; i++ )
+            {
+                m_lowestSamples[ i ] = short.MaxValue;
+            }
+
+            int startIdx = m_fpsSamplesCount < m_fpsSamplesCapacity ? 1 : 0;
+
+            for( int i = startIdx; i < startIdx + m_fpsSamplesCount; i++ )
+            {
+                short sample = m_fpsSamples[ i ];
+
+                if( sample < m_lowestSamples[ k - 1 ] )
+                {
+                    m_lowestSamples[ k - 1 ] = sample;
+
+                    for( int j = k - 1; j > 0 && m_lowestSamples[ j ] < m_lowestSamples[ j - 1 ]; j-- )
+                    {
+                        short temp = m_lowestSamples[ j ];
+                        m_lowestSamples[ j ] = m_lowestSamples[ j - 1 ];
+                        m_lowestSamples[ j - 1 ] = temp;
+                    }
+                }
+            }
+
+            uint totalAddedFps = 0;
+
+            short kZero1 = m_fpsSamplesCount < m_zero1PercentSamples
                 ? m_fpsSamplesCount
                 : m_zero1PercentSamples;
 
-            short sampleToStartIn = (short) (m_fpsSamplesCapacity - m_fpsSamplesCount);
-
-            for( short i = sampleToStartIn; i < sampleToStartIn + samplesToIterateThroughForOnePercent; i++ )
+            for( int i = 0; i < k; i++ )
             {
-                totalAddedFps += (ushort) m_fpsSamplesSorted[ i ];
+                totalAddedFps += (ushort) m_lowestSamples[ i ];
 
-                if( !zero1PercentCalculated && i >= samplesToIterateThroughForZero1Percent - 1 )
+                if( i == kZero1 - 1 )
                 {
-                    zero1PercentCalculated = true;
-
                     Zero1PercentFps = (short) ((float) totalAddedFps / (float) m_zero1PercentSamples);
                 }
             }
@@ -133,9 +140,10 @@ namespace Tayx.Graphy.Fps
         private void Init()
         {
             m_fpsSamples = new short[m_fpsSamplesCapacity];
-            m_fpsSamplesSorted = new short[m_fpsSamplesCapacity];
 
             UpdateParameters();
+
+            m_lowestSamples = new short[m_onePercentSamples > 0 ? m_onePercentSamples : 1];
         }
 
         #endregion
