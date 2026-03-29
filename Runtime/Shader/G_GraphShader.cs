@@ -54,6 +54,9 @@ namespace Tayx.Graphy
         private static readonly int GraphValues = Shader.PropertyToID( "GraphValues" );
         private static readonly int GraphValuesLength = Shader.PropertyToID( "GraphValues_Length" );
 
+        private static readonly float[] m_initArrayFull = new float[ArrayMaxSizeFull];
+        private static readonly float[] m_initArrayLight = new float[ArrayMaxSizeLight];
+
         #endregion
 
         #region Methods -> Public
@@ -69,7 +72,7 @@ namespace Tayx.Graphy
         /// </summary>
         public void InitializeShader()
         {
-            Image.material.SetFloatArray( GraphValues, new float[ArrayMaxSize] );
+            Image.material.SetFloatArray( GraphValues, ArrayMaxSize == ArrayMaxSizeFull ? m_initArrayFull : m_initArrayLight );
         }
 
         /// <summary>
