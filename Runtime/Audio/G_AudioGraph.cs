@@ -27,7 +27,7 @@ namespace Tayx.Graphy.Audio
         [SerializeField] private Shader ShaderFull = null;
         [SerializeField] private Shader ShaderLight = null;
 
-        [SerializeField] private bool m_isInitialized = false;
+        private bool m_isInitialized = false;
 
         #endregion
 
