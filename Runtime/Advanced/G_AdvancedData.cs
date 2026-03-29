@@ -49,6 +49,7 @@ namespace Tayx.Graphy.Advanced
         
 #if GRAPHY_XR && !UNITY_TVOS && !UNITY_GAMECORE
         private readonly List<XRDisplaySubsystem> m_displaySubsystems = new List<XRDisplaySubsystem>();
+        private XRDisplaySubsystem m_cachedDisplay = null;
 #endif
         
         [Range( 1, 60 )] [SerializeField] private float m_updateRate = 1f; // 1 update per sec.
@@ -126,16 +127,21 @@ namespace Tayx.Graphy.Advanced
                 {
                     m_sb.Length = 0;
 
+                    if( m_cachedDisplay == null || !m_cachedDisplay.running )
+                    {
 #if UNITY_2020_2_OR_NEWER
-                    SubsystemManager.GetSubsystems( m_displaySubsystems );
+                        SubsystemManager.GetSubsystems( m_displaySubsystems );
 #else
-                    SubsystemManager.GetInstances( m_displaySubsystems );
+                        SubsystemManager.GetInstances( m_displaySubsystems );
 #endif
+                        m_cachedDisplay = m_displaySubsystems.Count > 0 ? m_displaySubsystems[ 0 ] : null;
+                    }
+
                     float refreshRate = -1;
 
-                    if( m_displaySubsystems.Count > 0 )
+                    if( m_cachedDisplay != null )
                     {
-                        m_displaySubsystems[ 0 ].TryGetDisplayRefreshRate( out refreshRate );
+                        m_cachedDisplay.TryGetDisplayRefreshRate( out refreshRate );
                     }
 
                     m_sb.Append( m_vrStrings[ 0 ] ).Append( XRSettings.eyeTextureWidth.ToStringNonAlloc() )

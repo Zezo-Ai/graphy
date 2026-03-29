@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Graphy.Runtime.UI
+namespace Tayx.Graphy.UI
 {
     [RequireComponent(typeof(RectTransform))]
     public sealed class G_SafeArea : MonoBehaviour
