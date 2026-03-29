@@ -330,9 +330,14 @@ namespace Tayx.Graphy
         /// <returns></returns>
         public void RemoveFirstDebugPacketWithId( int packetId )
         {
-            if( m_debugPackets != null && GetFirstDebugPacketWithId( packetId ) != null )
+            if( m_debugPackets != null )
             {
-                m_debugPackets.Remove( GetFirstDebugPacketWithId( packetId ) );
+                var packet = GetFirstDebugPacketWithId( packetId );
+
+                if( packet != null )
+                {
+                    m_debugPackets.Remove( packet );
+                }
             }
         }
 
@@ -356,9 +361,11 @@ namespace Tayx.Graphy
         /// <param name="id"></param>
         public void AddCallbackToFirstDebugPacketWithId( System.Action callback, int id )
         {
-            if( GetFirstDebugPacketWithId( id ) != null )
+            var packet = GetFirstDebugPacketWithId( id );
+
+            if( packet != null )
             {
-                GetFirstDebugPacketWithId( id ).Callbacks.Add( callback );
+                packet.Callbacks.Add( callback );
             }
         }
 
@@ -369,9 +376,11 @@ namespace Tayx.Graphy
         /// <param name="id"></param>
         public void AddCallbackToAllDebugPacketWithId( System.Action callback, int id )
         {
-            if( GetAllDebugPacketsWithId( id ) != null )
+            var packets = GetAllDebugPacketsWithId( id );
+
+            if( packets != null )
             {
-                foreach( var debugPacket in GetAllDebugPacketsWithId( id ) )
+                foreach( var debugPacket in packets )
                 {
                     if( callback != null )
                     {
