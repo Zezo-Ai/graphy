@@ -148,7 +148,7 @@ namespace Tayx.Graphy.Audio
                 {
                     float value =
                     (
-                        m_audioMonitor.dBNormalized( m_audioMonitor.lin2dB( currentValue / incrementPerIteration ) )
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) )
                         + m_graphArray[ i - 1 ]
                         + m_graphArray[ i - 2 ]
                     ) / 3;
@@ -161,7 +161,7 @@ namespace Tayx.Graphy.Audio
                 else
                 {
                     m_graphArray[ i ] =
-                        m_audioMonitor.dBNormalized( m_audioMonitor.lin2dB( currentValue / incrementPerIteration ) );
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) );
                 }
             }
 
@@ -190,7 +190,7 @@ namespace Tayx.Graphy.Audio
                 {
                     float value =
                     (
-                        m_audioMonitor.dBNormalized( m_audioMonitor.lin2dB( currentValue / incrementPerIteration ) )
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) )
                         + m_graphArrayHighestValue[ i - 1 ]
                         + m_graphArrayHighestValue[ i - 2 ]
                     ) / 3;
@@ -203,7 +203,7 @@ namespace Tayx.Graphy.Audio
                 else
                 {
                     m_graphArrayHighestValue[ i ] =
-                        m_audioMonitor.dBNormalized( m_audioMonitor.lin2dB( currentValue / incrementPerIteration ) );
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) );
                 }
             }
 

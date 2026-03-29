@@ -155,7 +155,7 @@ namespace Tayx.Graphy.Audio
         /// </summary>
         /// <param name="linear"></param>
         /// <returns></returns>
-        public float lin2dB( float linear )
+        public static float lin2dB( float linear )
         {
             return Mathf.Clamp( Mathf.Log10( linear ) * 20.0f, -160.0f, 0.0f );
         }
@@ -165,7 +165,7 @@ namespace Tayx.Graphy.Audio
         /// </summary>
         /// <param name="db"></param>
         /// <returns></returns>
-        public float dBNormalized( float db )
+        public static float dBNormalized( float db )
         {
             return (db + 160f) / 160f;
         }
