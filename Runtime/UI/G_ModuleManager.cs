@@ -2,7 +2,7 @@
  * Author:          Martin Pane (martintayx@gmail.com) (@martinTayx)
  * Contributors:    https://github.com/Tayx94/graphy/graphs/contributors
  * Project:         Graphy - Ultimate Stats Monitor
- * Date:            03-Jan-18
+ * Date:            23-Mar-26
  * Studio:          Tayx
  *
  * Git repo:        https://github.com/Tayx94/graphy
