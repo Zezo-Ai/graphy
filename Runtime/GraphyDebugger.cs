@@ -173,6 +173,8 @@ namespace Tayx.Graphy
         private G_RamMonitor m_ramMonitor = null;
         private G_AudioMonitor m_audioMonitor = null;
 
+        private static readonly System.Predicate<DebugPacket> m_isPacketNull = packet => packet == null;
+
         #endregion
 
         #region Methods -> Unity Callbacks
@@ -450,7 +452,7 @@ namespace Tayx.Graphy
                 }
             }
 
-            m_debugPackets.RemoveAll( ( packet ) => packet == null );
+            m_debugPackets.RemoveAll( m_isPacketNull );
         }
 
         /// <summary>
