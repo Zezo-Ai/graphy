@@ -205,6 +205,8 @@ namespace Tayx.Graphy
 
         private ModulePreset m_modulePresetState = ModulePreset.FPS_BASIC_ADVANCED_FULL;
 
+        private static readonly int m_modulePresetCount = Enum.GetNames( typeof( ModulePreset ) ).Length;
+
         #endregion
 
         #region Properties -> Public
@@ -621,7 +623,7 @@ namespace Tayx.Graphy
 
         public void ToggleModes()
         {
-            if( (int) m_modulePresetState >= Enum.GetNames( typeof( ModulePreset ) ).Length - 1 )
+            if( (int) m_modulePresetState >= m_modulePresetCount - 1 )
             {
                 m_modulePresetState = 0;
             }
