@@ -19,7 +19,7 @@ using UnityEngine.UI;
 
 namespace Tayx.Graphy.Ram
 {
-    public class G_RamManager : MonoBehaviour, IMovable, IModifiableState
+    public class G_RamManager : G_ModuleManager
     {
         #region Variables -> Serialized Private
 
@@ -31,18 +31,8 @@ namespace Tayx.Graphy.Ram
 
         #region Variables -> Private
 
-        private GraphyManager m_graphyManager = null;
-
         private G_RamGraph m_ramGraph = null;
         private G_RamText m_ramText = null;
-
-        private RectTransform m_rectTransform = null;
-        private Vector2 m_origPosition = Vector2.zero;
-
-        private List<GameObject> m_childrenGameObjects = new List<GameObject>();
-
-        private GraphyManager.ModuleState m_previousModuleState = GraphyManager.ModuleState.FULL;
-        private GraphyManager.ModuleState m_currentModuleState = GraphyManager.ModuleState.FULL;
 
         #endregion
 
@@ -62,61 +52,38 @@ namespace Tayx.Graphy.Ram
 
         #region Methods -> Public
 
-        public void SetPosition( GraphyManager.ModulePosition newModulePosition, Vector2 offset )
+        public override void UpdateParameters()
         {
-            if ( newModulePosition == GraphyManager.ModulePosition.FREE )
-                return;
-            
-            m_rectTransform.anchoredPosition = m_origPosition;
-
-            float xSideOffset = Mathf.Abs( m_rectTransform.anchoredPosition.x ) + offset.x;
-            float ySideOffset = Mathf.Abs( m_rectTransform.anchoredPosition.y ) + offset.y;
-
-            switch( newModulePosition )
+            foreach( var image in m_backgroundImages )
             {
-                case GraphyManager.ModulePosition.TOP_LEFT:
-
-                    m_rectTransform.anchorMax = Vector2.up;
-                    m_rectTransform.anchorMin = Vector2.up;
-                    m_rectTransform.anchoredPosition = new Vector2( xSideOffset, -ySideOffset );
-
-                    break;
-
-                case GraphyManager.ModulePosition.TOP_RIGHT:
-
-                    m_rectTransform.anchorMax = Vector2.one;
-                    m_rectTransform.anchorMin = Vector2.one;
-                    m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, -ySideOffset );
-
-                    break;
-
-                case GraphyManager.ModulePosition.BOTTOM_LEFT:
-
-                    m_rectTransform.anchorMax = Vector2.zero;
-                    m_rectTransform.anchorMin = Vector2.zero;
-                    m_rectTransform.anchoredPosition = new Vector2( xSideOffset, ySideOffset );
-
-                    break;
-
-                case GraphyManager.ModulePosition.BOTTOM_RIGHT:
-
-                    m_rectTransform.anchorMax = Vector2.right;
-                    m_rectTransform.anchorMin = Vector2.right;
-                    m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, ySideOffset );
-
-                    break;
+                image.color = m_graphyManager.BackgroundColor;
             }
+
+            m_ramGraph.UpdateParameters();
+            m_ramText.UpdateParameters();
+
+            SetState( m_graphyManager.RamModuleState );
         }
 
-        public void SetState( GraphyManager.ModuleState state, bool silentUpdate = false )
+        public override void RefreshParameters()
         {
-            if( !silentUpdate )
+            foreach( var image in m_backgroundImages )
             {
-                m_previousModuleState = m_currentModuleState;
+                image.color = m_graphyManager.BackgroundColor;
             }
 
-            m_currentModuleState = state;
+            m_ramGraph.UpdateParameters();
+            m_ramText.UpdateParameters();
 
+            SetState( m_currentModuleState, true );
+        }
+
+        #endregion
+
+        #region Methods -> Protected Override
+
+        protected override void ApplyModuleState( GraphyManager.ModuleState state )
+        {
             switch( state )
             {
                 case GraphyManager.ModuleState.FULL:
@@ -167,58 +134,16 @@ namespace Tayx.Graphy.Ram
             }
         }
 
-        public void RestorePreviousState()
-        {
-            SetState( m_previousModuleState );
-        }
-
-        public void UpdateParameters()
-        {
-            foreach( var image in m_backgroundImages )
-            {
-                image.color = m_graphyManager.BackgroundColor;
-            }
-
-            m_ramGraph.UpdateParameters();
-            m_ramText.UpdateParameters();
-
-            SetState( m_graphyManager.RamModuleState );
-        }
-
-        public void RefreshParameters()
-        {
-            foreach( var image in m_backgroundImages )
-            {
-                image.color = m_graphyManager.BackgroundColor;
-            }
-
-            m_ramGraph.UpdateParameters();
-            m_ramText.UpdateParameters();
-
-            SetState( m_currentModuleState, true );
-        }
-
         #endregion
 
         #region Methods -> Private
 
         private void Init()
         {
-            m_graphyManager = transform.root.GetComponentInChildren<GraphyManager>();
+            InitBase();
 
             m_ramGraph = GetComponent<G_RamGraph>();
             m_ramText = GetComponent<G_RamText>();
-
-            m_rectTransform = GetComponent<RectTransform>();
-            m_origPosition = m_rectTransform.anchoredPosition;
-
-            foreach( Transform child in transform )
-            {
-                if( child.parent == transform )
-                {
-                    m_childrenGameObjects.Add( child.gameObject );
-                }
-            }
         }
 
         private void SetGraphActive( bool active )
