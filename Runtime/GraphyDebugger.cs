@@ -308,7 +308,7 @@ namespace Tayx.Graphy
         /// <returns></returns>
         public DebugPacket GetFirstDebugPacketWithId( int packetId )
         {
-            return m_debugPackets.First( x => x.Id == packetId );
+            return m_debugPackets.FirstOrDefault( x => x.Id == packetId );
         }
 
         /// <summary>
