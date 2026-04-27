@@ -116,11 +116,11 @@ namespace Tayx.Graphy.Fps
 
                 if( i == kZero1 - 1 )
                 {
-                    Zero1PercentFps = (short) ((float) totalAddedFps / (float) m_zero1PercentSamples);
+                    Zero1PercentFps = (short) ((float) totalAddedFps / (float) kZero1);
                 }
             }
 
-            OnePercentFPS = (short) ((float) totalAddedFps / (float) m_onePercentSamples);
+            OnePercentFPS = (short) ((float) totalAddedFps / (float) k);
         }
 
         #endregion
