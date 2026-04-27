@@ -33,7 +33,7 @@ namespace Tayx.Graphy.Ram
 
         private G_RamMonitor m_ramMonitor = null;
 
-        private float m_updateRate = 4f; // 4 updates per sec.
+        private int m_updateRate = 4; // 4 updates per sec.
 
         private float m_deltaTime = 0.0f;
 
