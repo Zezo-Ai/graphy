@@ -110,6 +110,9 @@
 
             uniform float GraphValues_Length;
 
+            static const fixed ThresholdLineAlpha = 0.55;
+            static const fixed ThresholdLineWidth = 0.02;
+
             fixed4 frag(v2f IN) : SV_Target
             {
                 fixed4 color = IN.color;
@@ -156,15 +159,17 @@
                 }
 
                 // CautionColor bar
-                if (yCoord < _CautionThreshold && yCoord > _CautionThreshold - 0.02)
+                if (yCoord < _CautionThreshold && yCoord > _CautionThreshold - ThresholdLineWidth)
                 {
                     color = _CautionColor;
+                    color.a *= ThresholdLineAlpha;
                 }
 
                 // GoodColor bar
-                if (yCoord < _GoodThreshold && yCoord > _GoodThreshold - 0.02)
+                if (yCoord < _GoodThreshold && yCoord > _GoodThreshold - ThresholdLineWidth)
                 {
                     color = _GoodColor;
+                    color.a *= ThresholdLineAlpha;
                 }
 
                 // Fade the alpha of the sides of the graph
