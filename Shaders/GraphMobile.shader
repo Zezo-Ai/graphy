@@ -109,6 +109,7 @@
             uniform float GraphValues[128];
 
             uniform float GraphValues_Length;
+            uniform float GraphValueWidth;
 
             static const fixed ThresholdLineAlpha = 0.55;
             static const fixed ThresholdLineWidth = 0.02;
@@ -120,10 +121,8 @@
                 fixed xCoord = IN.texcoord.x;
                 fixed yCoord = IN.texcoord.y;
 
-                float graphValue = GraphValues[floor(xCoord * GraphValues_Length)];
-
-                // Define the width of each element of the graph
-                float increment = 1.0f / (GraphValues_Length - 1);
+                int graphValueIndex = (int) min(floor(xCoord * GraphValues_Length), GraphValues_Length - 1);
+                float graphValue = GraphValues[graphValueIndex];
 
                 // Assign the corresponding color
                 if (graphValue > _GoodThreshold)
@@ -140,7 +139,7 @@
                 }
 
                 // Point coloring
-                if (graphValue - yCoord > increment * 4)
+                if (graphValue - yCoord > GraphValueWidth)
                 {
                     //color.a = yCoord * graphValue * 0.3;
                     color.a *= yCoord * 0.3 / graphValue;
@@ -173,14 +172,7 @@
                 }
 
                 // Fade the alpha of the sides of the graph
-                if (xCoord < 0.03)
-                {
-                    color.a *= 1 - (0.03 - xCoord) / 0.03;
-                }
-                else if (xCoord > 0.97)
-                {
-                    color.a *= (1 - xCoord) / 0.03;
-                }
+                color.a *= saturate(min(xCoord, 1 - xCoord) * 33.333333);
 
                 fixed4 c = SampleSpriteTexture(IN.texcoord) * color;
 
