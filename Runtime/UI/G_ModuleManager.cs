@@ -50,6 +50,7 @@ namespace Tayx.Graphy.UI
 
                     m_rectTransform.anchorMax = Vector2.up;
                     m_rectTransform.anchorMin = Vector2.up;
+                    m_rectTransform.pivot = Vector2.up;
                     m_rectTransform.anchoredPosition = new Vector2( xSideOffset, -ySideOffset );
 
                     break;
@@ -58,6 +59,7 @@ namespace Tayx.Graphy.UI
 
                     m_rectTransform.anchorMax = Vector2.one;
                     m_rectTransform.anchorMin = Vector2.one;
+                    m_rectTransform.pivot = Vector2.one;
                     m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, -ySideOffset );
 
                     break;
@@ -66,6 +68,7 @@ namespace Tayx.Graphy.UI
 
                     m_rectTransform.anchorMax = Vector2.zero;
                     m_rectTransform.anchorMin = Vector2.zero;
+                    m_rectTransform.pivot = Vector2.zero;
                     m_rectTransform.anchoredPosition = new Vector2( xSideOffset, ySideOffset );
 
                     break;
@@ -74,6 +77,7 @@ namespace Tayx.Graphy.UI
 
                     m_rectTransform.anchorMax = Vector2.right;
                     m_rectTransform.anchorMin = Vector2.right;
+                    m_rectTransform.pivot = Vector2.right;
                     m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, ySideOffset );
 
                     break;
