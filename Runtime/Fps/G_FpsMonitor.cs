@@ -1,4 +1,4 @@
-/* ---------------------------------------
+﻿/* ---------------------------------------
  * Author:          Martin Pane (martintayx@gmail.com) (@martinTayx)
  * Contributors:    https://github.com/Tayx94/graphy/graphs/contributors
  * Project:         Graphy - Ultimate Stats Monitor
@@ -19,17 +19,15 @@ namespace Tayx.Graphy.Fps
     {
         #region Variables -> Private
 
-        private short[] m_fpsSamples;
-        private short[] m_lowestSamples;
-        private short m_fpsSamplesCapacity = 1024;
-        private short m_onePercentSamples = 10;
-        private short m_zero1PercentSamples = 1;
-        private short m_fpsSamplesCount = 0;
-        private short m_indexSample = 0;
+        private const int m_fpsSamplesCapacity = 1024;
 
-        private float m_unscaledDeltaTime = 0f;
+        private float[] m_frameTimeSamples;
+        private float[] m_slowestFrameTimeSamples;
 
-        private uint m_runningSum = 0;
+        private int m_fpsSamplesCount = 0;
+        private int m_indexSample = 0;
+
+        private double m_runningFrameTime = 0;
 
         #endregion
 
@@ -51,86 +49,79 @@ namespace Tayx.Graphy.Fps
 
         private void Update()
         {
-            m_unscaledDeltaTime = Time.unscaledDeltaTime;
+            float unscaledDeltaTime = Time.unscaledDeltaTime;
 
-            // Update fps and ms
+            if( unscaledDeltaTime <= 0 || float.IsNaN( unscaledDeltaTime ) || float.IsInfinity( unscaledDeltaTime ) )
+            {
+                return;
+            }
 
-            CurrentFPS = (short) (Mathf.RoundToInt( 1f / m_unscaledDeltaTime ));
+            CurrentFPS = ToFps( 1d / unscaledDeltaTime );
 
-            // Update avg fps
+            m_runningFrameTime -= m_frameTimeSamples[ m_indexSample ];
+            m_frameTimeSamples[ m_indexSample ] = unscaledDeltaTime;
+            m_runningFrameTime += unscaledDeltaTime;
 
-            m_indexSample++;
-
-            if( m_indexSample >= m_fpsSamplesCapacity ) m_indexSample = 0;
-
-            m_runningSum -= (uint) m_fpsSamples[ m_indexSample ];
-            m_fpsSamples[ m_indexSample ] = CurrentFPS;
-            m_runningSum += (uint) CurrentFPS;
+            m_indexSample = (m_indexSample + 1) % m_fpsSamplesCapacity;
 
             if( m_fpsSamplesCount < m_fpsSamplesCapacity )
             {
                 m_fpsSamplesCount++;
             }
 
-            AverageFPS = (short) ((float) m_runningSum / (float) m_fpsSamplesCount);
+            AverageFPS = ToFps( m_fpsSamplesCount / m_runningFrameTime );
 
-            // Update percent lows
+            int onePercentSamples = Mathf.Max( 1, Mathf.RoundToInt( m_fpsSamplesCount * 0.01f ) );
+            int zero1PercentSamples = Mathf.Max( 1, Mathf.RoundToInt( m_fpsSamplesCount * 0.001f ) );
 
-            short k = m_fpsSamplesCount < m_onePercentSamples
-                ? m_fpsSamplesCount
-                : m_onePercentSamples;
-
-            for( int i = 0; i < k; i++ )
+            for( int i = 0; i < onePercentSamples; i++ )
             {
-                m_lowestSamples[ i ] = short.MaxValue;
+                m_slowestFrameTimeSamples[ i ] = 0;
             }
 
-            int startIdx = m_fpsSamplesCount < m_fpsSamplesCapacity ? 1 : 0;
-
-            for( int i = startIdx; i < startIdx + m_fpsSamplesCount; i++ )
+            for( int i = 0; i < m_fpsSamplesCount; i++ )
             {
-                short sample = m_fpsSamples[ i ];
+                float sample = m_frameTimeSamples[ i ];
 
-                if( sample < m_lowestSamples[ k - 1 ] )
+                if( sample > m_slowestFrameTimeSamples[ onePercentSamples - 1 ] )
                 {
-                    m_lowestSamples[ k - 1 ] = sample;
+                    m_slowestFrameTimeSamples[ onePercentSamples - 1 ] = sample;
 
-                    for( int j = k - 1; j > 0 && m_lowestSamples[ j ] < m_lowestSamples[ j - 1 ]; j-- )
+                    for( int j = onePercentSamples - 1;
+                         j > 0 && m_slowestFrameTimeSamples[ j ] > m_slowestFrameTimeSamples[ j - 1 ];
+                         j-- )
                     {
-                        short temp = m_lowestSamples[ j ];
-                        m_lowestSamples[ j ] = m_lowestSamples[ j - 1 ];
-                        m_lowestSamples[ j - 1 ] = temp;
+                        float temp = m_slowestFrameTimeSamples[ j ];
+                        m_slowestFrameTimeSamples[ j ] = m_slowestFrameTimeSamples[ j - 1 ];
+                        m_slowestFrameTimeSamples[ j - 1 ] = temp;
                     }
                 }
             }
 
-            uint totalAddedFps = 0;
+            double totalFrameTime = 0;
 
-            short kZero1 = m_fpsSamplesCount < m_zero1PercentSamples
-                ? m_fpsSamplesCount
-                : m_zero1PercentSamples;
-
-            for( int i = 0; i < k; i++ )
+            for( int i = 0; i < onePercentSamples; i++ )
             {
-                totalAddedFps += (ushort) m_lowestSamples[ i ];
+                totalFrameTime += m_slowestFrameTimeSamples[ i ];
 
-                if( i == kZero1 - 1 )
+                if( i == zero1PercentSamples - 1 )
                 {
-                    Zero1PercentFps = (short) ((float) totalAddedFps / (float) kZero1);
+                    Zero1PercentFps = ToFps( zero1PercentSamples / totalFrameTime );
                 }
             }
 
-            OnePercentFPS = (short) ((float) totalAddedFps / (float) k);
+            OnePercentFPS = ToFps( onePercentSamples / totalFrameTime );
         }
 
         #endregion
 
         #region Methods -> Public
 
+        /// <summary>
+        /// Retained for API compatibility. FPS sample parameters now update automatically.
+        /// </summary>
         public void UpdateParameters()
         {
-            m_onePercentSamples = (short) (m_fpsSamplesCapacity / 100);
-            m_zero1PercentSamples = (short) (m_fpsSamplesCapacity / 1000);
         }
 
         #endregion
@@ -139,11 +130,22 @@ namespace Tayx.Graphy.Fps
 
         private void Init()
         {
-            m_fpsSamples = new short[m_fpsSamplesCapacity];
+            m_frameTimeSamples = new float[m_fpsSamplesCapacity];
 
-            UpdateParameters();
+            int maxOnePercentSamples = Mathf.Max( 1, Mathf.RoundToInt( m_fpsSamplesCapacity * 0.01f ) );
+            m_slowestFrameTimeSamples = new float[maxOnePercentSamples];
+        }
 
-            m_lowestSamples = new short[m_onePercentSamples > 0 ? m_onePercentSamples : 1];
+        private short ToFps( double fps )
+        {
+            if( double.IsNaN( fps ) || double.IsInfinity( fps ) || fps <= 0 )
+            {
+                return 0;
+            }
+
+            return fps >= short.MaxValue
+                ? short.MaxValue
+                : (short) Mathf.RoundToInt( (float) fps );
         }
 
         #endregion

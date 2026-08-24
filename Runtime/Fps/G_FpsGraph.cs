@@ -131,6 +131,7 @@ namespace Tayx.Graphy.Fps
                 m_shaderGraph.ShaderArrayValues = new float[m_resolution];
             }
 
+            m_highestFps = Mathf.Max( m_highestFps, m_fpsMonitor.AverageFPS );
             for( int i = 0; i < m_resolution; i++ )
             {
                 m_shaderGraph.ShaderArrayValues[ i ] = m_fpsArray[ ( m_writeIndex + i ) % m_resolution ] / (float) m_highestFps;
@@ -140,7 +141,7 @@ namespace Tayx.Graphy.Fps
 
             m_shaderGraph.UpdatePoints();
 
-            m_shaderGraph.Average = m_fpsMonitor.AverageFPS / m_highestFps;
+            m_shaderGraph.Average = (float) m_fpsMonitor.AverageFPS / m_highestFps;
             m_shaderGraph.UpdateAverage();
 
             m_shaderGraph.GoodThreshold = (float) m_graphyManager.GoodFPSThreshold / m_highestFps;
