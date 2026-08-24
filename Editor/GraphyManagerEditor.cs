@@ -46,6 +46,7 @@ namespace Tayx.Graphy
 
         private SerializedProperty m_background;
         private SerializedProperty m_backgroundColor;
+        private SerializedProperty m_uiScale;
 
         private SerializedProperty m_enableHotkeys;
 
@@ -153,6 +154,7 @@ namespace Tayx.Graphy
 
             m_background = serObj.FindProperty( "m_background" );
             m_backgroundColor = serObj.FindProperty( "m_backgroundColor" );
+            m_uiScale = serObj.FindProperty( "m_uiScale" );
 
             m_enableHotkeys = serObj.FindProperty( "m_enableHotkeys" );
 
@@ -345,6 +347,16 @@ namespace Tayx.Graphy
             m_backgroundColor.colorValue = EditorGUILayout.ColorField( m_backgroundColor.colorValue );
 
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.PropertyField
+            (
+                m_uiScale,
+                new GUIContent
+                (
+                    text: "UI Scale",
+                    tooltip: "Multiplies Graphy's scale after the Canvas Scaler has adjusted it for the screen."
+                )
+            );
 
             GUILayout.Space( 10 );
 

@@ -24,6 +24,10 @@ namespace Tayx.Graphy.UI
 
         protected RectTransform m_rectTransform = null;
         protected Vector2 m_origPosition = Vector2.zero;
+        protected Vector3 m_origScale = Vector3.one;
+        protected Vector2 m_unscaledPosition = Vector2.zero;
+        protected float m_scale = 1f;
+        protected bool m_isFreePosition = false;
 
         protected List<GameObject> m_childrenGameObjects = new List<GameObject>();
 
@@ -37,12 +41,15 @@ namespace Tayx.Graphy.UI
         public virtual void SetPosition( GraphyManager.ModulePosition newModulePosition, Vector2 offset )
         {
             if( newModulePosition == GraphyManager.ModulePosition.FREE )
+            {
+                m_isFreePosition = true;
                 return;
+            }
 
-            m_rectTransform.anchoredPosition = m_origPosition;
+            m_isFreePosition = false;
 
-            float xSideOffset = Mathf.Abs( m_rectTransform.anchoredPosition.x ) + offset.x;
-            float ySideOffset = Mathf.Abs( m_rectTransform.anchoredPosition.y ) + offset.y;
+            float xSideOffset = Mathf.Abs( m_origPosition.x ) + offset.x;
+            float ySideOffset = Mathf.Abs( m_origPosition.y ) + offset.y;
 
             switch( newModulePosition )
             {
@@ -51,7 +58,7 @@ namespace Tayx.Graphy.UI
                     m_rectTransform.anchorMax = Vector2.up;
                     m_rectTransform.anchorMin = Vector2.up;
                     m_rectTransform.pivot = Vector2.up;
-                    m_rectTransform.anchoredPosition = new Vector2( xSideOffset, -ySideOffset );
+                    m_unscaledPosition = new Vector2( xSideOffset, -ySideOffset );
 
                     break;
 
@@ -60,7 +67,7 @@ namespace Tayx.Graphy.UI
                     m_rectTransform.anchorMax = Vector2.one;
                     m_rectTransform.anchorMin = Vector2.one;
                     m_rectTransform.pivot = Vector2.one;
-                    m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, -ySideOffset );
+                    m_unscaledPosition = new Vector2( -xSideOffset, -ySideOffset );
 
                     break;
 
@@ -69,7 +76,7 @@ namespace Tayx.Graphy.UI
                     m_rectTransform.anchorMax = Vector2.zero;
                     m_rectTransform.anchorMin = Vector2.zero;
                     m_rectTransform.pivot = Vector2.zero;
-                    m_rectTransform.anchoredPosition = new Vector2( xSideOffset, ySideOffset );
+                    m_unscaledPosition = new Vector2( xSideOffset, ySideOffset );
 
                     break;
 
@@ -78,10 +85,12 @@ namespace Tayx.Graphy.UI
                     m_rectTransform.anchorMax = Vector2.right;
                     m_rectTransform.anchorMin = Vector2.right;
                     m_rectTransform.pivot = Vector2.right;
-                    m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, ySideOffset );
+                    m_unscaledPosition = new Vector2( -xSideOffset, ySideOffset );
 
                     break;
             }
+
+            ApplyScale();
         }
 
         public void SetState( GraphyManager.ModuleState state, bool silentUpdate = false )
@@ -101,6 +110,12 @@ namespace Tayx.Graphy.UI
             SetState( m_previousModuleState );
         }
 
+        public void SetScale( float scale )
+        {
+            m_scale = scale;
+            ApplyScale();
+        }
+
         public abstract void UpdateParameters();
 
         public abstract void RefreshParameters();
@@ -117,6 +132,8 @@ namespace Tayx.Graphy.UI
 
             m_rectTransform = GetComponent<RectTransform>();
             m_origPosition = m_rectTransform.anchoredPosition;
+            m_origScale = m_rectTransform.localScale;
+            m_unscaledPosition = m_origPosition;
 
             foreach( Transform child in transform )
             {
@@ -124,6 +141,20 @@ namespace Tayx.Graphy.UI
                 {
                     m_childrenGameObjects.Add( child.gameObject );
                 }
+            }
+        }
+
+        #endregion
+
+        #region Methods -> Private
+
+        private void ApplyScale()
+        {
+            m_rectTransform.localScale = m_origScale * m_scale;
+
+            if( !m_isFreePosition )
+            {
+                m_rectTransform.anchoredPosition = m_unscaledPosition * m_scale;
             }
         }
 

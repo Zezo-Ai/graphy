@@ -62,6 +62,10 @@ namespace Tayx.Graphy.Advanced
 
         private RectTransform m_rectTransform = null;
         private Vector2 m_origPosition = Vector2.zero;
+        private Vector3 m_origScale = Vector3.one;
+        private Vector2 m_unscaledPosition = Vector2.zero;
+        private float m_scale = 1f;
+        private bool m_isFreePosition = false;
 
         private float m_deltaTime = 0.0f;
 
@@ -165,12 +169,15 @@ namespace Tayx.Graphy.Advanced
         public void SetPosition( GraphyManager.ModulePosition newModulePosition, Vector2 offset )
         {
             if ( newModulePosition == GraphyManager.ModulePosition.FREE )
+            {
+                m_isFreePosition = true;
                 return;
-            
-            m_rectTransform.anchoredPosition = m_origPosition;
+            }
 
-            float xSideOffset = Mathf.Abs( m_rectTransform.anchoredPosition.x ) + offset.x;
-            float ySideOffset = Mathf.Abs( m_rectTransform.anchoredPosition.y ) + offset.y;
+            m_isFreePosition = false;
+
+            float xSideOffset = Mathf.Abs( m_origPosition.x ) + offset.x;
+            float ySideOffset = Mathf.Abs( m_origPosition.y ) + offset.y;
 
             switch( newModulePosition )
             {
@@ -179,7 +186,7 @@ namespace Tayx.Graphy.Advanced
                     m_rectTransform.anchorMax = Vector2.up;
                     m_rectTransform.anchorMin = Vector2.up;
                     m_rectTransform.pivot = Vector2.up;
-                    m_rectTransform.anchoredPosition = new Vector2( xSideOffset, -ySideOffset );
+                    m_unscaledPosition = new Vector2( xSideOffset, -ySideOffset );
 
                     break;
 
@@ -188,7 +195,7 @@ namespace Tayx.Graphy.Advanced
                     m_rectTransform.anchorMax = Vector2.one;
                     m_rectTransform.anchorMin = Vector2.one;
                     m_rectTransform.pivot = Vector2.one;
-                    m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, -ySideOffset );
+                    m_unscaledPosition = new Vector2( -xSideOffset, -ySideOffset );
 
                     break;
 
@@ -197,7 +204,7 @@ namespace Tayx.Graphy.Advanced
                     m_rectTransform.anchorMax = Vector2.zero;
                     m_rectTransform.anchorMin = Vector2.zero;
                     m_rectTransform.pivot = Vector2.zero;
-                    m_rectTransform.anchoredPosition = new Vector2( xSideOffset, ySideOffset );
+                    m_unscaledPosition = new Vector2( xSideOffset, ySideOffset );
 
                     break;
 
@@ -206,10 +213,12 @@ namespace Tayx.Graphy.Advanced
                     m_rectTransform.anchorMax = Vector2.right;
                     m_rectTransform.anchorMin = Vector2.right;
                     m_rectTransform.pivot = Vector2.right;
-                    m_rectTransform.anchoredPosition = new Vector2( -xSideOffset, ySideOffset );
+                    m_unscaledPosition = new Vector2( -xSideOffset, ySideOffset );
 
                     break;
             }
+
+            ApplyScale();
 
             switch( newModulePosition )
             {
@@ -271,31 +280,49 @@ namespace Tayx.Graphy.Advanced
             SetState( m_previousModuleState );
         }
 
+        public void SetScale( float scale )
+        {
+            m_scale = scale;
+            ApplyScale();
+        }
+
         public void UpdateParameters()
         {
-            foreach( var image in m_backgroundImages )
-            {
-                image.color = m_graphyManager.BackgroundColor;
-            }
-
-            SetPosition( m_graphyManager.AdvancedModulePosition, Vector2.zero );
-            SetState( m_graphyManager.AdvancedModuleState );
+            UpdateBackground();
         }
 
         public void RefreshParameters()
         {
+            UpdateBackground();
+        }
+
+        public void UpdateBackground()
+        {
             foreach( var image in m_backgroundImages )
             {
                 image.color = m_graphyManager.BackgroundColor;
             }
 
-            SetPosition( m_graphyManager.AdvancedModulePosition, Vector2.zero );
-            SetState( m_currentModuleState, true );
+            bool active = m_currentModuleState == GraphyManager.ModuleState.FULL
+                          || m_currentModuleState == GraphyManager.ModuleState.TEXT
+                          || m_currentModuleState == GraphyManager.ModuleState.BASIC;
+
+            m_backgroundImages.SetAllActive( active && m_graphyManager.Background );
         }
 
         #endregion
 
         #region Methods -> Private
+
+        private void ApplyScale()
+        {
+            m_rectTransform.localScale = m_origScale * m_scale;
+
+            if( !m_isFreePosition )
+            {
+                m_rectTransform.anchoredPosition = m_unscaledPosition * m_scale;
+            }
+        }
 
         private void Init()
         {
@@ -306,6 +333,7 @@ namespace Tayx.Graphy.Advanced
             m_sb = new StringBuilder();
 
             m_rectTransform = GetComponent<RectTransform>();
+            m_origScale = m_rectTransform.localScale;
 
             m_processorTypeText.text
                 = "CPU: "
@@ -398,6 +426,7 @@ namespace Tayx.Graphy.Advanced
             );
 
             m_origPosition = m_rectTransform.anchoredPosition;
+            m_unscaledPosition = m_origPosition;
 
             UpdateParameters();
         }
