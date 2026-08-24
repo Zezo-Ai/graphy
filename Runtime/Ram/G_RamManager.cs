@@ -54,28 +54,59 @@ namespace Tayx.Graphy.Ram
 
         public override void UpdateParameters()
         {
-            foreach( var image in m_backgroundImages )
-            {
-                image.color = m_graphyManager.BackgroundColor;
-            }
-
-            m_ramGraph.UpdateParameters();
-            m_ramText.UpdateParameters();
-
-            SetState( m_graphyManager.RamModuleState );
+            UpdateBackground();
+            UpdateGraphParameters();
+            UpdateTextParameters();
         }
 
         public override void RefreshParameters()
+        {
+            UpdateParameters();
+        }
+
+        public void UpdateBackground()
         {
             foreach( var image in m_backgroundImages )
             {
                 image.color = m_graphyManager.BackgroundColor;
             }
 
-            m_ramGraph.UpdateParameters();
-            m_ramText.UpdateParameters();
+            if( !m_graphyManager.Background )
+            {
+                m_backgroundImages.SetAllActive( false );
+                return;
+            }
 
-            SetState( m_currentModuleState, true );
+            switch( m_currentModuleState )
+            {
+                case GraphyManager.ModuleState.FULL:
+                    m_backgroundImages.SetOneActive( 0 );
+                    break;
+
+                case GraphyManager.ModuleState.TEXT:
+                case GraphyManager.ModuleState.BASIC:
+                    m_backgroundImages.SetOneActive( 1 );
+                    break;
+
+                default:
+                    m_backgroundImages.SetAllActive( false );
+                    break;
+            }
+        }
+
+        public void UpdateGraphParameters()
+        {
+            m_ramGraph.UpdateParameters();
+        }
+
+        public void UpdateGraphColors()
+        {
+            m_ramGraph.UpdateColors();
+        }
+
+        public void UpdateTextParameters()
+        {
+            m_ramText.UpdateParameters();
         }
 
         #endregion

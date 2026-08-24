@@ -63,30 +63,80 @@ namespace Tayx.Graphy.Audio
 
         public override void UpdateParameters()
         {
-            foreach( var image in m_backgroundImages )
-            {
-                image.color = m_graphyManager.BackgroundColor;
-            }
-
-            m_audioGraph.UpdateParameters();
-            m_audioMonitor.UpdateParameters();
-            m_audioText.UpdateParameters();
-
-            SetState( m_graphyManager.AudioModuleState );
+            UpdateBackground();
+            UpdateGraphParameters();
+            UpdateMonitorParameters();
+            UpdateTextParameters();
         }
 
         public override void RefreshParameters()
+        {
+            UpdateParameters();
+        }
+
+        public void UpdateBackground()
         {
             foreach( var image in m_backgroundImages )
             {
                 image.color = m_graphyManager.BackgroundColor;
             }
 
-            m_audioGraph.UpdateParameters();
-            m_audioMonitor.UpdateParameters();
-            m_audioText.UpdateParameters();
+            if( !m_graphyManager.Background )
+            {
+                m_backgroundImages.SetAllActive( false );
+                return;
+            }
 
-            SetState( m_currentModuleState, true );
+            switch( m_currentModuleState )
+            {
+                case GraphyManager.ModuleState.FULL:
+                    m_backgroundImages.SetOneActive( 0 );
+                    break;
+
+                case GraphyManager.ModuleState.TEXT:
+                case GraphyManager.ModuleState.BASIC:
+                    m_backgroundImages.SetOneActive( 1 );
+                    break;
+
+                default:
+                    m_backgroundImages.SetAllActive( false );
+                    break;
+            }
+        }
+
+        public void UpdateGraphParameters()
+        {
+            m_audioGraph.UpdateParameters();
+        }
+
+        public void UpdateGraphColors()
+        {
+            m_audioGraph.UpdateColors();
+        }
+
+        public void UpdateMonitorParameters()
+        {
+            m_audioMonitor.UpdateParameters();
+        }
+
+        public void UpdateAudioListener()
+        {
+            m_audioMonitor.UpdateListenerParameters();
+        }
+
+        public void UpdateFftWindow()
+        {
+            m_audioMonitor.UpdateFftWindow();
+        }
+
+        public void UpdateSpectrumSize()
+        {
+            m_audioMonitor.UpdateSpectrumSize();
+        }
+
+        public void UpdateTextParameters()
+        {
+            m_audioText.UpdateParameters();
         }
 
         #endregion

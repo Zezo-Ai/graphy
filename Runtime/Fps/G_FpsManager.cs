@@ -36,7 +36,6 @@ namespace Tayx.Graphy.Fps
         #region Variables -> Private
 
         private G_FpsGraph m_fpsGraph = null;
-        private G_FpsMonitor m_fpsMonitor = null;
         private G_FpsText m_fpsText = null;
 
         #endregion
@@ -59,30 +58,62 @@ namespace Tayx.Graphy.Fps
 
         public override void UpdateParameters()
         {
-            foreach( var image in m_backgroundImages )
-            {
-                image.color = m_graphyManager.BackgroundColor;
-            }
-
-            m_fpsGraph.UpdateParameters();
-            m_fpsMonitor.UpdateParameters();
-            m_fpsText.UpdateParameters();
-
-            SetState( m_graphyManager.FpsModuleState );
+            UpdateBackground();
+            UpdateGraphParameters();
+            UpdateTextParameters();
         }
 
         public override void RefreshParameters()
+        {
+            UpdateParameters();
+        }
+
+        public void UpdateBackground()
         {
             foreach( var image in m_backgroundImages )
             {
                 image.color = m_graphyManager.BackgroundColor;
             }
 
-            m_fpsGraph.UpdateParameters();
-            m_fpsMonitor.UpdateParameters();
-            m_fpsText.UpdateParameters();
+            if( !m_graphyManager.Background )
+            {
+                m_backgroundImages.SetAllActive( false );
+                return;
+            }
 
-            SetState( m_currentModuleState, true );
+            switch( m_currentModuleState )
+            {
+                case GraphyManager.ModuleState.FULL:
+                    m_backgroundImages.SetOneActive( 0 );
+                    break;
+
+                case GraphyManager.ModuleState.TEXT:
+                    m_backgroundImages.SetOneActive( 1 );
+                    break;
+
+                case GraphyManager.ModuleState.BASIC:
+                    m_backgroundImages.SetOneActive( 2 );
+                    break;
+
+                default:
+                    m_backgroundImages.SetAllActive( false );
+                    break;
+            }
+        }
+
+        public void UpdateGraphParameters()
+        {
+            m_fpsGraph.UpdateParameters();
+        }
+
+        public void UpdateGraphColors()
+        {
+            m_fpsGraph.UpdateColors();
+        }
+
+        public void UpdateTextParameters()
+        {
+            m_fpsText.UpdateParameters();
         }
 
         #endregion
@@ -165,7 +196,6 @@ namespace Tayx.Graphy.Fps
             InitBase();
 
             m_fpsGraph = GetComponent<G_FpsGraph>();
-            m_fpsMonitor = GetComponent<G_FpsMonitor>();
             m_fpsText = GetComponent<G_FpsText>();
         }
 

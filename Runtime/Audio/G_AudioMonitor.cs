@@ -134,18 +134,39 @@ namespace Tayx.Graphy.Audio
 
         public void UpdateParameters()
         {
+            UpdateListenerParameters();
+            UpdateFftWindow();
+            UpdateSpectrumSize();
+        }
+
+        public void UpdateListenerParameters()
+        {
             m_findAudioListenerInCameraIfNull = m_graphyManager.FindAudioListenerInCameraIfNull;
 
             m_audioListener = m_graphyManager.AudioListener;
-            m_FFTWindow = m_graphyManager.FftWindow;
-            m_spectrumSize = m_graphyManager.SpectrumSize;
 
             if( m_audioListener == null
                 && m_findAudioListenerInCameraIfNull != GraphyManager.LookForAudioListener.NEVER )
             {
                 m_audioListener = FindAudioListener();
             }
+        }
 
+        public void UpdateFftWindow()
+        {
+            m_FFTWindow = m_graphyManager.FftWindow;
+        }
+
+        public void UpdateSpectrumSize()
+        {
+            int spectrumSize = m_graphyManager.SpectrumSize;
+
+            if( Spectrum != null && SpectrumHighestValues != null && m_spectrumSize == spectrumSize )
+            {
+                return;
+            }
+
+            m_spectrumSize = spectrumSize;
             Spectrum = new float[m_spectrumSize];
             SpectrumHighestValues = new float[m_spectrumSize];
         }

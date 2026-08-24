@@ -39,6 +39,7 @@ namespace Tayx.Graphy.Ram
         private G_RamMonitor m_ramMonitor = null;
 
         private int m_resolution = 150;
+        private GraphyManager.Mode m_graphyMode = GraphyManager.Mode.FULL;
 
         private G_GraphShader m_shaderGraphAllocated = null;
         private G_GraphShader m_shaderGraphReserved = null;
@@ -79,51 +80,53 @@ namespace Tayx.Graphy.Ram
                 return;
             }
 
-            if( m_isInitialized && m_shaderGraphAllocated.Image.material != null )
+            bool materialChanged = UpdateMaterials();
+            int resolution = m_graphyManager.RamGraphResolution;
+
+            if( m_shaderGraphAllocated.ShaderArrayValues == null || m_resolution != resolution )
             {
-                Destroy( m_shaderGraphAllocated.Image.material );
+                m_resolution = resolution;
+                CreatePoints();
+            }
+            else if( materialChanged )
+            {
+                UpdateShaderParameters();
+                m_shaderGraphAllocated.UpdatePoints();
+                m_shaderGraphReserved.UpdatePoints();
+                m_shaderGraphMono.UpdatePoints();
+            }
+            else
+            {
+                UpdateColors();
+            }
+        }
+
+        public void UpdateColors()
+        {
+            if( m_shaderGraphAllocated == null
+                || m_shaderGraphReserved == null
+                || m_shaderGraphMono == null )
+            {
+                return;
             }
 
-            if( m_isInitialized && m_shaderGraphReserved.Image.material != null )
-            {
-                Destroy( m_shaderGraphReserved.Image.material );
-            }
+            m_shaderGraphAllocated.GoodColor = m_graphyManager.AllocatedRamColor;
+            m_shaderGraphAllocated.CautionColor = m_graphyManager.AllocatedRamColor;
+            m_shaderGraphAllocated.CriticalColor = m_graphyManager.AllocatedRamColor;
 
-            if( m_isInitialized && m_shaderGraphMono.Image.material != null )
-            {
-                Destroy( m_shaderGraphMono.Image.material );
-            }
+            m_shaderGraphAllocated.UpdateColors();
 
-            switch( m_graphyManager.GraphyMode )
-            {
-                case GraphyManager.Mode.FULL:
-                    m_shaderGraphAllocated.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
-                    m_shaderGraphReserved.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
-                    m_shaderGraphMono.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
+            m_shaderGraphReserved.GoodColor = m_graphyManager.ReservedRamColor;
+            m_shaderGraphReserved.CautionColor = m_graphyManager.ReservedRamColor;
+            m_shaderGraphReserved.CriticalColor = m_graphyManager.ReservedRamColor;
 
-                    m_shaderGraphAllocated.Image.material = new Material( ShaderFull );
-                    m_shaderGraphReserved.Image.material = new Material( ShaderFull );
-                    m_shaderGraphMono.Image.material = new Material( ShaderFull );
-                    break;
+            m_shaderGraphReserved.UpdateColors();
 
-                case GraphyManager.Mode.LIGHT:
-                    m_shaderGraphAllocated.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
-                    m_shaderGraphReserved.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
-                    m_shaderGraphMono.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
+            m_shaderGraphMono.GoodColor = m_graphyManager.MonoRamColor;
+            m_shaderGraphMono.CautionColor = m_graphyManager.MonoRamColor;
+            m_shaderGraphMono.CriticalColor = m_graphyManager.MonoRamColor;
 
-                    m_shaderGraphAllocated.Image.material = new Material( ShaderLight );
-                    m_shaderGraphReserved.Image.material = new Material( ShaderLight );
-                    m_shaderGraphMono.Image.material = new Material( ShaderLight );
-                    break;
-            }
-
-            m_shaderGraphAllocated.InitializeShader();
-            m_shaderGraphReserved.InitializeShader();
-            m_shaderGraphMono.InitializeShader();
-
-            m_resolution = m_graphyManager.RamGraphResolution;
-
-            CreatePoints();
+            m_shaderGraphMono.UpdateColors();
         }
 
         #endregion
@@ -196,27 +199,76 @@ namespace Tayx.Graphy.Ram
                 m_shaderGraphMono.ShaderArrayValues[ i ] = 0;
             }
 
-            // Initialize the material values
+            UpdateShaderParameters();
+        }
 
-            // Colors
+        #endregion
 
-            m_shaderGraphAllocated.GoodColor = m_graphyManager.AllocatedRamColor;
-            m_shaderGraphAllocated.CautionColor = m_graphyManager.AllocatedRamColor;
-            m_shaderGraphAllocated.CriticalColor = m_graphyManager.AllocatedRamColor;
+        #region Methods -> Private
 
-            m_shaderGraphAllocated.UpdateColors();
+        private bool UpdateMaterials()
+        {
+            GraphyManager.Mode graphyMode = m_graphyManager.GraphyMode;
 
-            m_shaderGraphReserved.GoodColor = m_graphyManager.ReservedRamColor;
-            m_shaderGraphReserved.CautionColor = m_graphyManager.ReservedRamColor;
-            m_shaderGraphReserved.CriticalColor = m_graphyManager.ReservedRamColor;
+            if( m_isInitialized
+                && m_graphyMode == graphyMode
+                && m_shaderGraphAllocated.Image.material != null
+                && m_shaderGraphReserved.Image.material != null
+                && m_shaderGraphMono.Image.material != null )
+            {
+                return false;
+            }
 
-            m_shaderGraphReserved.UpdateColors();
+            if( m_isInitialized && m_shaderGraphAllocated.Image.material != null )
+            {
+                Destroy( m_shaderGraphAllocated.Image.material );
+            }
 
-            m_shaderGraphMono.GoodColor = m_graphyManager.MonoRamColor;
-            m_shaderGraphMono.CautionColor = m_graphyManager.MonoRamColor;
-            m_shaderGraphMono.CriticalColor = m_graphyManager.MonoRamColor;
+            if( m_isInitialized && m_shaderGraphReserved.Image.material != null )
+            {
+                Destroy( m_shaderGraphReserved.Image.material );
+            }
 
-            m_shaderGraphMono.UpdateColors();
+            if( m_isInitialized && m_shaderGraphMono.Image.material != null )
+            {
+                Destroy( m_shaderGraphMono.Image.material );
+            }
+
+            switch( graphyMode )
+            {
+                case GraphyManager.Mode.FULL:
+                    m_shaderGraphAllocated.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
+                    m_shaderGraphReserved.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
+                    m_shaderGraphMono.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
+
+                    m_shaderGraphAllocated.Image.material = new Material( ShaderFull );
+                    m_shaderGraphReserved.Image.material = new Material( ShaderFull );
+                    m_shaderGraphMono.Image.material = new Material( ShaderFull );
+                    break;
+
+                case GraphyManager.Mode.LIGHT:
+                    m_shaderGraphAllocated.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
+                    m_shaderGraphReserved.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
+                    m_shaderGraphMono.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
+
+                    m_shaderGraphAllocated.Image.material = new Material( ShaderLight );
+                    m_shaderGraphReserved.Image.material = new Material( ShaderLight );
+                    m_shaderGraphMono.Image.material = new Material( ShaderLight );
+                    break;
+            }
+
+            m_shaderGraphAllocated.InitializeShader();
+            m_shaderGraphReserved.InitializeShader();
+            m_shaderGraphMono.InitializeShader();
+
+            m_graphyMode = graphyMode;
+
+            return true;
+        }
+
+        private void UpdateShaderParameters()
+        {
+            UpdateColors();
 
             // Thresholds
 
@@ -246,10 +298,6 @@ namespace Tayx.Graphy.Ram
             m_shaderGraphReserved.UpdateAverage();
             m_shaderGraphMono.UpdateAverage();
         }
-
-        #endregion
-
-        #region Methods -> Private
 
         private void Init()
         {

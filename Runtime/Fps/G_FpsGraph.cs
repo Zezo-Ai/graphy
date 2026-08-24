@@ -38,6 +38,7 @@ namespace Tayx.Graphy.Fps
         private G_FpsMonitor m_fpsMonitor = null;
 
         private int m_resolution = 150;
+        private GraphyManager.Mode m_graphyMode = GraphyManager.Mode.FULL;
 
         private G_GraphShader m_shaderGraph = null;
 
@@ -68,29 +69,35 @@ namespace Tayx.Graphy.Fps
                 return;
             }
 
-            if( m_isInitialized && m_shaderGraph.Image.material != null )
+            bool materialChanged = UpdateMaterial();
+            int resolution = m_graphyManager.FpsGraphResolution;
+
+            if( m_shaderGraph.ShaderArrayValues == null || m_resolution != resolution )
             {
-                Destroy( m_shaderGraph.Image.material );
+                m_resolution = resolution;
+                CreatePoints();
+            }
+            else if( materialChanged )
+            {
+                m_shaderGraph.UpdateArrayValuesLength();
+                m_shaderGraph.UpdatePoints();
             }
 
-            switch( m_graphyManager.GraphyMode )
-            {
-                case GraphyManager.Mode.FULL:
-                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
-                    m_shaderGraph.Image.material = new Material( ShaderFull );
-                    break;
+            UpdateColors();
+        }
 
-                case GraphyManager.Mode.LIGHT:
-                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
-                    m_shaderGraph.Image.material = new Material( ShaderLight );
-                    break;
+        public void UpdateColors()
+        {
+            if( m_shaderGraph == null )
+            {
+                return;
             }
 
-            m_shaderGraph.InitializeShader();
+            m_shaderGraph.GoodColor = m_graphyManager.GoodFPSColor;
+            m_shaderGraph.CautionColor = m_graphyManager.CautionFPSColor;
+            m_shaderGraph.CriticalColor = m_graphyManager.CriticalFPSColor;
 
-            m_resolution = m_graphyManager.FpsGraphResolution;
-
-            CreatePoints();
+            m_shaderGraph.UpdateColors();
         }
 
         #endregion
@@ -124,6 +131,7 @@ namespace Tayx.Graphy.Fps
             m_highestFps = m_highestFps < 1 || m_highestFps <= currentMaxFps ? currentMaxFps : m_highestFps - 1;
 
             m_highestFps = m_highestFps > 0 ? m_highestFps : 1;
+            m_highestFps = Mathf.Max( m_highestFps, m_fpsMonitor.AverageFPS );
 
             if( m_shaderGraph.ShaderArrayValues == null )
             {
@@ -131,7 +139,6 @@ namespace Tayx.Graphy.Fps
                 m_shaderGraph.ShaderArrayValues = new float[m_resolution];
             }
 
-            m_highestFps = Mathf.Max( m_highestFps, m_fpsMonitor.AverageFPS );
             for( int i = 0; i < m_resolution; i++ )
             {
                 m_shaderGraph.ShaderArrayValues[ i ] = m_fpsArray[ ( m_writeIndex + i ) % m_resolution ] / (float) m_highestFps;
@@ -151,7 +158,7 @@ namespace Tayx.Graphy.Fps
 
         protected override void CreatePoints()
         {
-            if( m_shaderGraph.ShaderArrayValues == null || m_fpsArray.Length != m_resolution )
+            if( m_shaderGraph.ShaderArrayValues == null || m_fpsArray == null || m_fpsArray.Length != m_resolution )
             {
                 m_fpsArray = new int[m_resolution];
                 m_shaderGraph.ShaderArrayValues = new float[m_resolution];
@@ -163,18 +170,45 @@ namespace Tayx.Graphy.Fps
                 m_shaderGraph.ShaderArrayValues[ i ] = 0;
             }
 
-            m_shaderGraph.GoodColor = m_graphyManager.GoodFPSColor;
-            m_shaderGraph.CautionColor = m_graphyManager.CautionFPSColor;
-            m_shaderGraph.CriticalColor = m_graphyManager.CriticalFPSColor;
-
-            m_shaderGraph.UpdateColors();
-
             m_shaderGraph.UpdateArrayValuesLength();
         }
 
         #endregion
 
         #region Methods -> Private
+
+        private bool UpdateMaterial()
+        {
+            GraphyManager.Mode graphyMode = m_graphyManager.GraphyMode;
+
+            if( m_isInitialized && m_graphyMode == graphyMode && m_shaderGraph.Image.material != null )
+            {
+                return false;
+            }
+
+            if( m_isInitialized && m_shaderGraph.Image.material != null )
+            {
+                Destroy( m_shaderGraph.Image.material );
+            }
+
+            switch( graphyMode )
+            {
+                case GraphyManager.Mode.FULL:
+                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
+                    m_shaderGraph.Image.material = new Material( ShaderFull );
+                    break;
+
+                case GraphyManager.Mode.LIGHT:
+                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
+                    m_shaderGraph.Image.material = new Material( ShaderLight );
+                    break;
+            }
+
+            m_shaderGraph.InitializeShader();
+            m_graphyMode = graphyMode;
+
+            return true;
+        }
 
         private void Init()
         {

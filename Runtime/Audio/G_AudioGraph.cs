@@ -38,6 +38,7 @@ namespace Tayx.Graphy.Audio
         private G_AudioMonitor m_audioMonitor = null;
 
         private int m_resolution = 40;
+        private GraphyManager.Mode m_graphyMode = GraphyManager.Mode.FULL;
 
         private G_GraphShader m_shaderGraph = null;
         private G_GraphShader m_shaderGraphHighestValues = null;
@@ -89,41 +90,42 @@ namespace Tayx.Graphy.Audio
                 return;
             }
 
-            if( m_isInitialized && m_shaderGraph.Image.material != null )
+            bool materialChanged = UpdateMaterials();
+            int resolution = m_graphyManager.AudioGraphResolution;
+
+            if( m_shaderGraph.ShaderArrayValues == null || m_resolution != resolution )
             {
-                Destroy( m_shaderGraph.Image.material );
+                m_resolution = resolution;
+                CreatePoints();
+            }
+            else if( materialChanged )
+            {
+                UpdateShaderParameters();
+                m_shaderGraph.UpdatePoints();
+                m_shaderGraphHighestValues.UpdatePoints();
+            }
+            else
+            {
+                UpdateColors();
+            }
+        }
+
+        public void UpdateColors()
+        {
+            if( m_shaderGraph == null || m_shaderGraphHighestValues == null )
+            {
+                return;
             }
 
-            if( m_isInitialized && m_shaderGraphHighestValues.Image.material != null )
-            {
-                Destroy( m_shaderGraphHighestValues.Image.material );
-            }
+            m_shaderGraph.GoodColor = m_graphyManager.AudioGraphColor;
+            m_shaderGraph.CautionColor = m_graphyManager.AudioGraphColor;
+            m_shaderGraph.CriticalColor = m_graphyManager.AudioGraphColor;
+            m_shaderGraph.UpdateColors();
 
-            switch( m_graphyManager.GraphyMode )
-            {
-                case GraphyManager.Mode.FULL:
-                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
-                    m_shaderGraph.Image.material = new Material( ShaderFull );
-
-                    m_shaderGraphHighestValues.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
-                    m_shaderGraphHighestValues.Image.material = new Material( ShaderFull );
-                    break;
-
-                case GraphyManager.Mode.LIGHT:
-                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
-                    m_shaderGraph.Image.material = new Material( ShaderLight );
-
-                    m_shaderGraphHighestValues.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
-                    m_shaderGraphHighestValues.Image.material = new Material( ShaderLight );
-                    break;
-            }
-
-            m_shaderGraph.InitializeShader();
-            m_shaderGraphHighestValues.InitializeShader();
-
-            m_resolution = m_graphyManager.AudioGraphResolution;
-
-            CreatePoints();
+            m_shaderGraphHighestValues.GoodColor = m_graphyManager.AudioGraphColor;
+            m_shaderGraphHighestValues.CautionColor = m_graphyManager.AudioGraphColor;
+            m_shaderGraphHighestValues.CriticalColor = m_graphyManager.AudioGraphColor;
+            m_shaderGraphHighestValues.UpdateColors();
         }
 
         #endregion
@@ -228,7 +230,9 @@ namespace Tayx.Graphy.Audio
         protected override void CreatePoints()
         {
             // Init Arrays
-            if( m_shaderGraph.ShaderArrayValues == null || m_shaderGraph.ShaderArrayValues.Length != m_resolution )
+            if( m_shaderGraph.ShaderArrayValues == null
+                || m_graphArray == null
+                || m_shaderGraph.ShaderArrayValues.Length != m_resolution )
             {
                 m_graphArray = new float[m_resolution];
                 m_graphArrayHighestValue = new float[m_resolution];
@@ -242,16 +246,65 @@ namespace Tayx.Graphy.Audio
                 m_shaderGraphHighestValues.ShaderArrayValues[ i ] = 0;
             }
 
-            // Color
-            m_shaderGraph.GoodColor = m_graphyManager.AudioGraphColor;
-            m_shaderGraph.CautionColor = m_graphyManager.AudioGraphColor;
-            m_shaderGraph.CriticalColor = m_graphyManager.AudioGraphColor;
-            m_shaderGraph.UpdateColors();
+            UpdateShaderParameters();
+        }
 
-            m_shaderGraphHighestValues.GoodColor = m_graphyManager.AudioGraphColor;
-            m_shaderGraphHighestValues.CautionColor = m_graphyManager.AudioGraphColor;
-            m_shaderGraphHighestValues.CriticalColor = m_graphyManager.AudioGraphColor;
-            m_shaderGraphHighestValues.UpdateColors();
+        #endregion
+
+        #region Methods -> Private
+
+        private bool UpdateMaterials()
+        {
+            GraphyManager.Mode graphyMode = m_graphyManager.GraphyMode;
+
+            if( m_isInitialized
+                && m_graphyMode == graphyMode
+                && m_shaderGraph.Image.material != null
+                && m_shaderGraphHighestValues.Image.material != null )
+            {
+                return false;
+            }
+
+            if( m_isInitialized && m_shaderGraph.Image.material != null )
+            {
+                Destroy( m_shaderGraph.Image.material );
+            }
+
+            if( m_isInitialized && m_shaderGraphHighestValues.Image.material != null )
+            {
+                Destroy( m_shaderGraphHighestValues.Image.material );
+            }
+
+            switch( graphyMode )
+            {
+                case GraphyManager.Mode.FULL:
+                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
+                    m_shaderGraph.Image.material = new Material( ShaderFull );
+
+                    m_shaderGraphHighestValues.ArrayMaxSize = G_GraphShader.ArrayMaxSizeFull;
+                    m_shaderGraphHighestValues.Image.material = new Material( ShaderFull );
+                    break;
+
+                case GraphyManager.Mode.LIGHT:
+                    m_shaderGraph.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
+                    m_shaderGraph.Image.material = new Material( ShaderLight );
+
+                    m_shaderGraphHighestValues.ArrayMaxSize = G_GraphShader.ArrayMaxSizeLight;
+                    m_shaderGraphHighestValues.Image.material = new Material( ShaderLight );
+                    break;
+            }
+
+            m_shaderGraph.InitializeShader();
+            m_shaderGraphHighestValues.InitializeShader();
+
+            m_graphyMode = graphyMode;
+
+            return true;
+        }
+
+        private void UpdateShaderParameters()
+        {
+            UpdateColors();
 
             // Threshold
             m_shaderGraph.GoodThreshold = 0;
@@ -273,10 +326,6 @@ namespace Tayx.Graphy.Audio
             m_shaderGraphHighestValues.Average = 0;
             m_shaderGraphHighestValues.UpdateAverage();
         }
-
-        #endregion
-
-        #region Methods -> Private
 
         private void Init()
         {
