@@ -112,19 +112,21 @@ namespace Tayx.Graphy
 
         [SerializeField] private bool m_enableHotkeys = true;
 
-#if GRAPHY_NEW_INPUT
-        [SerializeField] private Key m_toggleModeKeyCode = Key.G;
-#else
+#pragma warning disable 0414 // Both backend-specific values must remain serialized while either backend is inactive.
         [SerializeField] private KeyCode m_toggleModeKeyCode = KeyCode.G;
+#if GRAPHY_NEW_INPUT
+        [SerializeField] private Key m_toggleModeInputSystemKey = Key.G;
 #endif
+#pragma warning restore 0414
         [SerializeField] private bool m_toggleModeCtrl = true;
         [SerializeField] private bool m_toggleModeAlt = false;
 
-#if GRAPHY_NEW_INPUT
-        [SerializeField] private Key m_toggleActiveKeyCode = Key.H;
-#else
+#pragma warning disable 0414 // Both backend-specific values must remain serialized while either backend is inactive.
         [SerializeField] private KeyCode m_toggleActiveKeyCode = KeyCode.H;
+#if GRAPHY_NEW_INPUT
+        [SerializeField] private Key m_toggleActiveInputSystemKey = Key.H;
 #endif
+#pragma warning restore 0414
         [SerializeField] private bool m_toggleActiveCtrl = true;
         [SerializeField] private bool m_toggleActiveAlt = false;
 
@@ -1234,39 +1236,39 @@ namespace Tayx.Graphy
 
         private void CheckForHotkeyPresses()
         {
-#if GRAPHY_NEW_INPUT
+#if GRAPHY_NEW_INPUT && ENABLE_INPUT_SYSTEM
             // Toggle Mode ---------------------------------------
-            if (m_toggleModeKeyCode != Key.None)
+            if (m_toggleModeInputSystemKey != Key.None)
             {
                 if( m_toggleModeCtrl && m_toggleModeAlt )
                 {
-                    if( CheckFor3KeyPress( m_toggleModeKeyCode, Key.LeftCtrl, Key.LeftAlt )
-                        || CheckFor3KeyPress( m_toggleModeKeyCode, Key.RightCtrl, Key.LeftAlt )
-                        || CheckFor3KeyPress( m_toggleModeKeyCode, Key.RightCtrl, Key.RightAlt )
-                        || CheckFor3KeyPress( m_toggleModeKeyCode, Key.LeftCtrl, Key.RightAlt ) )
+                    if( CheckFor3KeyPress( m_toggleModeInputSystemKey, Key.LeftCtrl, Key.LeftAlt )
+                        || CheckFor3KeyPress( m_toggleModeInputSystemKey, Key.RightCtrl, Key.LeftAlt )
+                        || CheckFor3KeyPress( m_toggleModeInputSystemKey, Key.RightCtrl, Key.RightAlt )
+                        || CheckFor3KeyPress( m_toggleModeInputSystemKey, Key.LeftCtrl, Key.RightAlt ) )
                     {
                         ToggleModes();
                     }
                 }
                 else if( m_toggleModeCtrl )
                 {
-                    if( CheckFor2KeyPress( m_toggleModeKeyCode, Key.LeftCtrl )
-                        || CheckFor2KeyPress( m_toggleModeKeyCode, Key.RightCtrl ) )
+                    if( CheckFor2KeyPress( m_toggleModeInputSystemKey, Key.LeftCtrl )
+                        || CheckFor2KeyPress( m_toggleModeInputSystemKey, Key.RightCtrl ) )
                     {
                         ToggleModes();
                     }
                 }
                 else if( m_toggleModeAlt )
                 {
-                    if( CheckFor2KeyPress( m_toggleModeKeyCode, Key.LeftAlt )
-                        || CheckFor2KeyPress( m_toggleModeKeyCode, Key.RightAlt ) )
+                    if( CheckFor2KeyPress( m_toggleModeInputSystemKey, Key.LeftAlt )
+                        || CheckFor2KeyPress( m_toggleModeInputSystemKey, Key.RightAlt ) )
                     {
                         ToggleModes();
                     }
                 }
                 else
                 {
-                    if( CheckFor1KeyPress( m_toggleModeKeyCode ) )
+                    if( CheckFor1KeyPress( m_toggleModeInputSystemKey ) )
                     {
                         ToggleModes();
                     }
@@ -1274,14 +1276,14 @@ namespace Tayx.Graphy
             }
 
             // Toggle Active -------------------------------------
-            if (m_toggleActiveKeyCode != Key.None)
+            if (m_toggleActiveInputSystemKey != Key.None)
             {
                 if( m_toggleActiveCtrl && m_toggleActiveAlt )
                 {
-                    if( CheckFor3KeyPress( m_toggleActiveKeyCode, Key.LeftCtrl, Key.LeftAlt )
-                        || CheckFor3KeyPress( m_toggleActiveKeyCode, Key.RightCtrl, Key.LeftAlt )
-                        || CheckFor3KeyPress( m_toggleActiveKeyCode, Key.RightCtrl, Key.RightAlt )
-                        || CheckFor3KeyPress( m_toggleActiveKeyCode, Key.LeftCtrl, Key.RightAlt ) )
+                    if( CheckFor3KeyPress( m_toggleActiveInputSystemKey, Key.LeftCtrl, Key.LeftAlt )
+                        || CheckFor3KeyPress( m_toggleActiveInputSystemKey, Key.RightCtrl, Key.LeftAlt )
+                        || CheckFor3KeyPress( m_toggleActiveInputSystemKey, Key.RightCtrl, Key.RightAlt )
+                        || CheckFor3KeyPress( m_toggleActiveInputSystemKey, Key.LeftCtrl, Key.RightAlt ) )
                     {
                         ToggleActive();
                     }
@@ -1289,23 +1291,23 @@ namespace Tayx.Graphy
 
                 else if( m_toggleActiveCtrl )
                 {
-                    if( CheckFor2KeyPress( m_toggleActiveKeyCode, Key.LeftCtrl )
-                        || CheckFor2KeyPress( m_toggleActiveKeyCode, Key.RightCtrl ) )
+                    if( CheckFor2KeyPress( m_toggleActiveInputSystemKey, Key.LeftCtrl )
+                        || CheckFor2KeyPress( m_toggleActiveInputSystemKey, Key.RightCtrl ) )
                     {
                         ToggleActive();
                     }
                 }
                 else if( m_toggleActiveAlt )
                 {
-                    if( CheckFor2KeyPress( m_toggleActiveKeyCode, Key.LeftAlt )
-                        || CheckFor2KeyPress( m_toggleActiveKeyCode, Key.RightAlt ) )
+                    if( CheckFor2KeyPress( m_toggleActiveInputSystemKey, Key.LeftAlt )
+                        || CheckFor2KeyPress( m_toggleActiveInputSystemKey, Key.RightAlt ) )
                     {
                         ToggleActive();
                     }
                 }
                 else
                 {
-                    if( CheckFor1KeyPress( m_toggleActiveKeyCode ) )
+                    if( CheckFor1KeyPress( m_toggleActiveInputSystemKey ) )
                     {
                         ToggleActive();
                     }
@@ -1391,7 +1393,7 @@ namespace Tayx.Graphy
 #endif
         }
 
-#if GRAPHY_NEW_INPUT
+#if GRAPHY_NEW_INPUT && ENABLE_INPUT_SYSTEM
         private bool CheckFor1KeyPress( Key key )
         {
             Keyboard currentKeyboard = Keyboard.current;

@@ -50,11 +50,21 @@ namespace Tayx.Graphy
 
         private SerializedProperty m_enableHotkeys;
 
+#pragma warning disable 0414 // Both backend-specific properties must remain cached while either backend is inactive.
         private SerializedProperty m_toggleModeKeyCode;
+#if GRAPHY_NEW_INPUT
+        private SerializedProperty m_toggleModeInputSystemKey;
+#endif
+#pragma warning restore 0414
         private SerializedProperty m_toggleModeCtrl;
         private SerializedProperty m_toggleModeAlt;
 
+#pragma warning disable 0414 // Both backend-specific properties must remain cached while either backend is inactive.
         private SerializedProperty m_toggleActiveKeyCode;
+#if GRAPHY_NEW_INPUT
+        private SerializedProperty m_toggleActiveInputSystemKey;
+#endif
+#pragma warning restore 0414
         private SerializedProperty m_toggleActiveCtrl;
         private SerializedProperty m_toggleActiveAlt;
 
@@ -159,11 +169,17 @@ namespace Tayx.Graphy
             m_enableHotkeys = serObj.FindProperty( "m_enableHotkeys" );
 
             m_toggleModeKeyCode = serObj.FindProperty( "m_toggleModeKeyCode" );
+#if GRAPHY_NEW_INPUT
+            m_toggleModeInputSystemKey = serObj.FindProperty( "m_toggleModeInputSystemKey" );
+#endif
 
             m_toggleModeCtrl = serObj.FindProperty( "m_toggleModeCtrl" );
             m_toggleModeAlt = serObj.FindProperty( "m_toggleModeAlt" );
 
             m_toggleActiveKeyCode = serObj.FindProperty( "m_toggleActiveKeyCode" );
+#if GRAPHY_NEW_INPUT
+            m_toggleActiveInputSystemKey = serObj.FindProperty( "m_toggleActiveInputSystemKey" );
+#endif
 
             m_toggleActiveCtrl = serObj.FindProperty( "m_toggleActiveCtrl" );
             m_toggleActiveAlt = serObj.FindProperty( "m_toggleActiveAlt" );
@@ -380,7 +396,11 @@ namespace Tayx.Graphy
 
                 EditorGUILayout.PropertyField
                 (
+#if GRAPHY_NEW_INPUT && ENABLE_INPUT_SYSTEM
+                    m_toggleModeInputSystemKey,
+#else
                     m_toggleModeKeyCode,
+#endif
                     new GUIContent
                     (
                         text: "Toggle Mode Key",
@@ -420,7 +440,11 @@ namespace Tayx.Graphy
 
                 EditorGUILayout.PropertyField
                 (
+#if GRAPHY_NEW_INPUT && ENABLE_INPUT_SYSTEM
+                    m_toggleActiveInputSystemKey,
+#else
                     m_toggleActiveKeyCode,
+#endif
                     new GUIContent
                     (
                         text: "Toggle Active Key",

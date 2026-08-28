@@ -2,7 +2,7 @@
 
 [![openupm](https://img.shields.io/npm/v/com.tayx.graphy?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.tayx.graphy/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/Tayx94/graphy/blob/master/LICENSE)
-[![Unity 2019.4+](https://img.shields.io/badge/unity-2019.4%2B-blue.svg)](https://unity3d.com/get-unity/download)
+[![Unity 2022.3+](https://img.shields.io/badge/unity-2022.3%2B-blue.svg)](https://unity.com/releases/editor/archive)
 
 [![Open Issues](https://img.shields.io/github/issues-raw/tayx94/graphy)](https://github.com/Tayx94/graphy/issues)
 [![Downloads](https://img.shields.io/github/downloads/tayx94/graphy/total)](https://github.com/Tayx94/graphy/releases)
@@ -41,8 +41,9 @@ The debugger allows you to set one or more conditions, that if met will have the
 - Hotkeys 
 - Easy to use API (accessible from code) 
 - Works on multiple platforms 
+- Supports the Built-in and Universal Render Pipelines
 - Background Mode 
-- Works from Unity 5.4 and up! 
+- Works with Unity 2022.3 and newer
 - Well documented C# and Shader code included 
 
 **Links:**
@@ -113,7 +114,6 @@ You can also join the [Discord](https://discord.gg/2KgNEHK?) for active discussi
 **Planned features (No ETA):**
 
   - Add GfxDriver stats to the RAM module.
-  - Scale Canvas (GetComponent<Canvas>().scaleFactor *= multiplier;) -> If it changes, set again.
   - Make a template for a graph + text module so people can create their own easily.
   - Allow storing FPS for a predetermined time to allow benchmarks.
   - Dump all Graphy Data as a string to:

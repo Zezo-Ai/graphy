@@ -103,9 +103,11 @@ MonoBehaviour:
   m_uiScale: 1
   m_enableHotkeys: 1
   m_toggleModeKeyCode: 103
+  m_toggleModeInputSystemKey: 21
   m_toggleModeCtrl: 1
   m_toggleModeAlt: 0
   m_toggleActiveKeyCode: 104
+  m_toggleActiveInputSystemKey: 22
   m_toggleActiveCtrl: 1
   m_toggleActiveAlt: 0
   m_graphModulePosition: 0
