@@ -131,11 +131,7 @@ namespace Tayx.Graphy.Advanced
 
                     if( m_cachedDisplay == null || !m_cachedDisplay.running )
                     {
-#if UNITY_2020_2_OR_NEWER
                         SubsystemManager.GetSubsystems( m_displaySubsystems );
-#else
-                        SubsystemManager.GetInstances( m_displaySubsystems );
-#endif
                         m_cachedDisplay = m_displaySubsystems.Count > 0 ? m_displaySubsystems[ 0 ] : null;
                     }
 
@@ -314,11 +310,7 @@ namespace Tayx.Graphy.Advanced
 
         private string GetRefreshRateString( Resolution resolution )
         {
-#if UNITY_2022_2_OR_NEWER
             return GetPositiveValueString( (float) resolution.refreshRateRatio.value );
-#else
-            return resolution.refreshRate > 0 ? resolution.refreshRate.ToStringNonAlloc() : m_notAvailable;
-#endif
         }
 
         private string GetPositiveValueString( float value )
