@@ -27,6 +27,8 @@ All notable changes to Graphy are documented in this file.
 - Fixed GraphyDebugger ID lookups when no matching packet exists.
 - Fixed audio text timing while the game is paused.
 - Fixed RAM initialization range and update-rate type mismatches.
+- Fixed Device Simulator crashes when the reported refresh rate is unavailable.
+- Validated graph resolutions and spectrum sizes to prevent invalid shader array access and audio graph values.
 
 ### Compatibility
 - Increased the minimum supported Unity version to 2022.3 LTS.

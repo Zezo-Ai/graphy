@@ -58,6 +58,8 @@ namespace Tayx.Graphy.Advanced
 
         #region Variables -> Private
 
+        private const string m_notAvailable = "N/A";
+
         private GraphyManager m_graphyManager = null;
 
         private RectTransform m_rectTransform = null;
@@ -110,17 +112,13 @@ namespace Tayx.Graphy.Advanced
                 // Update screen window resolution
                 m_sb.Length = 0;
 
+                Resolution currentResolution = Screen.currentResolution;
+
                 m_sb.Append( m_windowStrings[ 0 ] ).Append( Screen.width.ToStringNonAlloc() )
                     .Append( m_windowStrings[ 1 ] ).Append( Screen.height.ToStringNonAlloc() )
-                    .Append( m_windowStrings[ 2 ] ).Append(
-#if UNITY_2022_2_OR_NEWER
-                        ((int)Screen.currentResolution.refreshRateRatio.value).ToStringNonAlloc()
-#else
-                        Screen.currentResolution.refreshRate.ToStringNonAlloc()
-#endif
-                        )
+                    .Append( m_windowStrings[ 2 ] ).Append( GetRefreshRateString( currentResolution ) )
                     .Append( m_windowStrings[ 3 ] )
-                    .Append( m_windowStrings[ 4 ] ).Append( ((int) Screen.dpi).ToStringNonAlloc() )
+                    .Append( m_windowStrings[ 4 ] ).Append( GetPositiveValueString( Screen.dpi ) )
                     .Append( m_windowStrings[ 5 ] );
 
                 m_gameWindowResolutionText.text = m_sb.ToString();
@@ -150,7 +148,7 @@ namespace Tayx.Graphy.Advanced
 
                     m_sb.Append( m_vrStrings[ 0 ] ).Append( XRSettings.eyeTextureWidth.ToStringNonAlloc() )
                         .Append( m_vrStrings[ 1 ] ).Append( XRSettings.eyeTextureHeight.ToStringNonAlloc() )
-                        .Append( m_vrStrings[ 2 ] ).Append( Mathf.RoundToInt( refreshRate ).ToStringNonAlloc() )
+                        .Append( m_vrStrings[ 2 ] ).Append( GetPositiveValueString( refreshRate ) )
                         .Append( m_vrStrings[ 3 ] );
 
                     m_gameVRResolutionText.text = m_sb.ToString();
@@ -314,6 +312,22 @@ namespace Tayx.Graphy.Advanced
 
         #region Methods -> Private
 
+        private string GetRefreshRateString( Resolution resolution )
+        {
+#if UNITY_2022_2_OR_NEWER
+            return GetPositiveValueString( (float) resolution.refreshRateRatio.value );
+#else
+            return resolution.refreshRate > 0 ? resolution.refreshRate.ToStringNonAlloc() : m_notAvailable;
+#endif
+        }
+
+        private string GetPositiveValueString( float value )
+        {
+            return float.IsNaN( value ) || float.IsInfinity( value ) || value <= 0
+                ? m_notAvailable
+                : Mathf.RoundToInt( value ).ToStringNonAlloc();
+        }
+
         private void ApplyScale()
         {
             m_rectTransform.localScale = m_origScale * m_scale;
@@ -371,11 +385,7 @@ namespace Tayx.Graphy.Advanced
                   + "x"
                   + res.height
                   + "@"
-#if UNITY_2022_2_OR_NEWER
-                  + ((int)Screen.currentResolution.refreshRateRatio.value).ToStringNonAlloc()
-#else
-                  + res.refreshRate
-#endif
+                  + GetRefreshRateString( res )
                   + "Hz";
 
             m_operatingSystemText.text

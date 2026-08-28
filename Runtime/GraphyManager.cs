@@ -194,6 +194,12 @@ namespace Tayx.Graphy
 
         #region Variables -> Private
 
+        private const int m_minGraphResolution = 10;
+        private const int m_maxGraphResolution = 300;
+        private const int m_minAudioGraphResolution = 12;
+        private const int m_minSpectrumSize = 64;
+        private const int m_maxSpectrumSize = 8192;
+
         private bool m_initialized = false;
         private bool m_active = true;
         private bool m_activeStateSet = false;
@@ -220,15 +226,18 @@ namespace Tayx.Graphy
 
         public Mode GraphyMode
         {
-            get => m_graphyMode;
+            get => NormalizeGraphyMode( m_graphyMode );
             set
             {
-                if( m_graphyMode == value )
+                Mode graphyMode = NormalizeGraphyMode( value );
+
+                if( m_graphyMode == graphyMode )
                 {
                     return;
                 }
 
-                m_graphyMode = value;
+                m_graphyMode = graphyMode;
+                NormalizeGraphSettings();
 
                 if( m_initialized )
                 {
@@ -425,15 +434,17 @@ namespace Tayx.Graphy
 
         public int FpsGraphResolution
         {
-            get => m_fpsGraphResolution;
+            get => NormalizeGraphResolution( m_fpsGraphResolution );
             set
             {
-                if( m_fpsGraphResolution == value )
+                int resolution = NormalizeGraphResolution( value );
+
+                if( m_fpsGraphResolution == resolution )
                 {
                     return;
                 }
 
-                m_fpsGraphResolution = value;
+                m_fpsGraphResolution = resolution;
 
                 if( m_initialized )
                 {
@@ -541,15 +552,17 @@ namespace Tayx.Graphy
 
         public int RamGraphResolution
         {
-            get => m_ramGraphResolution;
+            get => NormalizeGraphResolution( m_ramGraphResolution );
             set
             {
-                if( m_ramGraphResolution == value )
+                int resolution = NormalizeGraphResolution( value );
+
+                if( m_ramGraphResolution == resolution )
                 {
                     return;
                 }
 
-                m_ramGraphResolution = value;
+                m_ramGraphResolution = resolution;
 
                 if( m_initialized )
                 {
@@ -652,15 +665,17 @@ namespace Tayx.Graphy
 
         public int AudioGraphResolution
         {
-            get => m_audioGraphResolution;
+            get => NormalizeAudioGraphResolution( m_audioGraphResolution );
             set
             {
-                if( m_audioGraphResolution == value )
+                int resolution = NormalizeAudioGraphResolution( value );
+
+                if( m_audioGraphResolution == resolution )
                 {
                     return;
                 }
 
-                m_audioGraphResolution = value;
+                m_audioGraphResolution = resolution;
 
                 if( m_initialized )
                 {
@@ -709,19 +724,30 @@ namespace Tayx.Graphy
 
         public int SpectrumSize
         {
-            get => m_spectrumSize;
+            get => NormalizeSpectrumSize( m_spectrumSize );
             set
             {
-                if( m_spectrumSize == value )
-                {
-                    return;
-                }
+                int spectrumSize = NormalizeSpectrumSize( value );
+                bool spectrumSizeChanged = m_spectrumSize != spectrumSize;
 
-                m_spectrumSize = value;
+                m_spectrumSize = spectrumSize;
+
+                int audioGraphResolution = NormalizeAudioGraphResolution( m_audioGraphResolution );
+                bool audioGraphResolutionChanged = m_audioGraphResolution != audioGraphResolution;
+
+                m_audioGraphResolution = audioGraphResolution;
 
                 if( m_initialized )
                 {
-                    m_audioManager.UpdateSpectrumSize();
+                    if( spectrumSizeChanged )
+                    {
+                        m_audioManager.UpdateSpectrumSize();
+                    }
+
+                    if( audioGraphResolutionChanged )
+                    {
+                        m_audioManager.UpdateGraphParameters();
+                    }
                 }
             }
         }
@@ -967,6 +993,8 @@ namespace Tayx.Graphy
                 return;
             }
 
+            NormalizeGraphSettings();
+
             if( m_keepAlive )
             {
                 DontDestroyOnLoad( transform.root.gameObject );
@@ -1021,6 +1049,8 @@ namespace Tayx.Graphy
                 ? 1f
                 : Mathf.Clamp( m_uiScale, 0.5f, 2f );
 
+            NormalizeGraphSettings();
+
             if( m_initialized )
             {
                 m_fpsManager.SetPosition( m_graphModulePosition, m_graphModuleOffset );
@@ -1041,6 +1071,48 @@ namespace Tayx.Graphy
                     ApplyDisabledState();
                 }
             }
+        }
+
+        private int GetMaxGraphResolution()
+        {
+            return NormalizeGraphyMode( m_graphyMode ) == Mode.LIGHT
+                ? G_GraphShader.ArrayMaxSizeLight
+                : m_maxGraphResolution;
+        }
+
+        private int NormalizeGraphResolution( int resolution )
+        {
+            return Mathf.Clamp( resolution, m_minGraphResolution, GetMaxGraphResolution() );
+        }
+
+        private int NormalizeAudioGraphResolution( int resolution )
+        {
+            int maxResolution = Mathf.Min( GetMaxGraphResolution(), NormalizeSpectrumSize( m_spectrumSize ) );
+            maxResolution -= maxResolution % 3;
+
+            int clampedResolution = Mathf.Clamp( resolution, m_minAudioGraphResolution, maxResolution );
+            int normalizedResolution = Mathf.RoundToInt( clampedResolution / 3f ) * 3;
+
+            return Mathf.Clamp( normalizedResolution, m_minAudioGraphResolution, maxResolution );
+        }
+
+        private static Mode NormalizeGraphyMode( Mode graphyMode )
+        {
+            return graphyMode == Mode.LIGHT ? Mode.LIGHT : Mode.FULL;
+        }
+
+        private static int NormalizeSpectrumSize( int spectrumSize )
+        {
+            return Mathf.ClosestPowerOfTwo( Mathf.Clamp( spectrumSize, m_minSpectrumSize, m_maxSpectrumSize ) );
+        }
+
+        private void NormalizeGraphSettings()
+        {
+            m_graphyMode = NormalizeGraphyMode( m_graphyMode );
+            m_spectrumSize = NormalizeSpectrumSize( m_spectrumSize );
+            m_fpsGraphResolution = NormalizeGraphResolution( m_fpsGraphResolution );
+            m_ramGraphResolution = NormalizeGraphResolution( m_ramGraphResolution );
+            m_audioGraphResolution = NormalizeAudioGraphResolution( m_audioGraphResolution );
         }
 
         private void SetModuleState( ModuleType moduleType, ModuleState moduleState )

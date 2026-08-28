@@ -141,18 +141,11 @@ namespace Tayx.Graphy.Audio
                 Init();
             }
 
-            int incrementPerIteration = Mathf.FloorToInt( m_audioMonitor.Spectrum.Length / (float) m_resolution );
-
             // Current values -------------------------
 
             for( int i = 0; i <= m_resolution - 1; i++ )
             {
-                float currentValue = 0;
-
-                for( int j = 0; j < incrementPerIteration; j++ )
-                {
-                    currentValue += m_audioMonitor.Spectrum[ i * incrementPerIteration + j ];
-                }
+                float currentValue = GetSpectrumAverage( m_audioMonitor.Spectrum, i );
 
                 // Uses 3 values for each bar to accomplish that look
 
@@ -160,7 +153,7 @@ namespace Tayx.Graphy.Audio
                 {
                     float value =
                     (
-                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) )
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue ) )
                         + m_graphArray[ i - 1 ]
                         + m_graphArray[ i - 2 ]
                     ) / 3;
@@ -173,7 +166,7 @@ namespace Tayx.Graphy.Audio
                 else
                 {
                     m_graphArray[ i ] =
-                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) );
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue ) );
                 }
             }
 
@@ -189,12 +182,7 @@ namespace Tayx.Graphy.Audio
 
             for( int i = 0; i <= m_resolution - 1; i++ )
             {
-                float currentValue = 0;
-
-                for( int j = 0; j < incrementPerIteration; j++ )
-                {
-                    currentValue += m_audioMonitor.SpectrumHighestValues[ i * incrementPerIteration + j ];
-                }
+                float currentValue = GetSpectrumAverage( m_audioMonitor.SpectrumHighestValues, i );
 
                 // Uses 3 values for each bar to accomplish that look
 
@@ -202,7 +190,7 @@ namespace Tayx.Graphy.Audio
                 {
                     float value =
                     (
-                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) )
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue ) )
                         + m_graphArrayHighestValue[ i - 1 ]
                         + m_graphArrayHighestValue[ i - 2 ]
                     ) / 3;
@@ -215,7 +203,7 @@ namespace Tayx.Graphy.Audio
                 else
                 {
                     m_graphArrayHighestValue[ i ] =
-                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue / incrementPerIteration ) );
+                        G_AudioMonitor.dBNormalized( G_AudioMonitor.lin2dB( currentValue ) );
                 }
             }
 
@@ -252,6 +240,31 @@ namespace Tayx.Graphy.Audio
         #endregion
 
         #region Methods -> Private
+
+        private float GetSpectrumAverage( float[] spectrum, int graphIndex )
+        {
+            if( spectrum == null || spectrum.Length == 0 )
+            {
+                return 0;
+            }
+
+            int startIndex = graphIndex * spectrum.Length / m_resolution;
+            int endIndex = (graphIndex + 1) * spectrum.Length / m_resolution;
+
+            if( endIndex <= startIndex )
+            {
+                return 0;
+            }
+
+            float total = 0;
+
+            for( int i = startIndex; i < endIndex; i++ )
+            {
+                total += spectrum[ i ];
+            }
+
+            return total / (endIndex - startIndex);
+        }
 
         private bool UpdateMaterials()
         {

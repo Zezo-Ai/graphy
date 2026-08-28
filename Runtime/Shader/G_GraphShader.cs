@@ -82,7 +82,7 @@ namespace Tayx.Graphy
         /// </summary>
         public void UpdateArrayValuesLength()
         {
-            int arrayLength = ShaderArrayValues.Length;
+            int arrayLength = Mathf.Min( ShaderArrayValues.Length, ArrayMaxSize );
 
             Image.material.SetInt( GraphValuesLength, arrayLength );
             Image.material.SetFloat( GraphValueWidth, arrayLength > 1 ? 4f / (arrayLength - 1) : 0 );
