@@ -18,7 +18,9 @@ All notable changes to Graphy are documented in this file.
 - Optimized graph fragment shader work and reduced threshold line opacity.
 - Synchronized module states and presets so cosmetic changes no longer reset visibility.
 - Separated Legacy Input Manager and Input System hotkey fields to keep serialized key values stable.
-- Updated the customization scene and removed its obsolete Input System assembly dependency.
+
+### Removed
+- Removed the legacy customization scene package and import menu.
 
 ### Fixed
 - Fixed graph corner positioning by updating module pivots.
